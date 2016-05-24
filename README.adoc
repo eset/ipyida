@@ -1,0 +1,84 @@
+= IPyIDA
+
+IPyIDA provides an improved console to is a python-only solution to use a
+IPython console in the context of IDA Pro. It spawns an IPython kernel that you
+can connect to with `ipython console --existing` (or `qtconsole` if you like
+fancy gui). You can then benefit from IPython's autocompletion, online help,
+monospaced font input field, and so on.
+
+== Install
+
+=== tl;dr
+
+1. Install IPython and make sure the module visible inside IDA's console
+2. Copy or link `ida_python.py` inside `$HOME/.idapro` or
+   `%APPDATA%"/Hex-Rays/IDA Pro`
+3. (Optional) Start kernel when IDA Pro is launched by adding it the your
+   `idapythonrc.py`
+
+=== Long version
+
+First, you need the IPython module to be accessible from IDA. If you type
+`import IPython` inside the IDA console and you don't see an `ImportError`, you
+should be good to go. There are several ways to do that. Check out
+`README.virtualenv.ad` to check how you can create a virtualenv for IDA.
+
+You must make also make `ida_ipython.py`
+
+=== Scripted version
+
+If you are lazy like me, you can copy paste the code bellow in your terminal
+and it should work:
+
+.Linux and OS X
+[source,bash]
+----
+git clone https://github.com/marc-etienne/ida_ipython.git
+cd ida_ipython
+pkdir -p "$HOME/.idapro"
+ln -s "$(pwd)"/ida_ipython.py "$HOME/.idapro/ida_ipython.py"
+echo 'import ida_ipython; ida_ipython.start_ipython_kernel()' >> "$HOME/.idapro/idapythonrc.py"
+----
+
+.Windows
+[source,batch]
+----
+git clone https://github.com/marc-etienne/ida_ipython.git
+cd ida_ipython
+mklink %APPDATA%"/Hex-Rays/IDA Pro/ida_ipython.py" %CWD%/ida_ipython.py
+echo "import ida_ipython; ida_ipython.start_ipython_kernel()" >> %APPDATA%"/Hex-Rays/IDA Pro/idapythonrc.py"
+----
+
+== Caveats
+
+=== Notebook not working
+
+IPython notebook cannot attach to an existing kernel like `ipython console` and
+`ipython qtconsole` do. There's some more background info here:
+https://github.com/ipython/ipython/issues/4066.
+
+There are workarounds to this be I didn't include one yet. I will consider
+adding it if it's not too hackish. Pull requests are welcome.
+
+=== External console not responding if IDA's window is in the background for too long
+
+This problem is specific to OS X's App Nap feature in OS X 10.9 and up. When
+running  Disabling App Nap for IDA Pro seems to fix the problem, but is a a hack
+for now and will use more battery on a laptop, we should find a better solution.
+
+Here is how to disable App Nap for IDA Pro:
+
+[source,bash]
+----
+defaults write com.hexrays.idaq   NSAppSleepDisabled -bool YES
+defaults write com.hexrays.idaq64 NSAppSleepDisabled -bool YES
+----
+
+== Similar work
+
+james91b also successfully integrated a IPython kernel. Being a non-Windows IDA
+user, I needed something cross-platform and took a different approach to
+implement it. IPyIDA uses a Python only Windows-only by james91b it is also
+available on Github at the following
+
+- https://github.com/james91b/ida_ipython

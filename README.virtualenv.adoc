@@ -1,0 +1,27 @@
+= IDA and Virtualenv
+
+
+
+[source, bash]
+----
+cd ~
+virtualenv "$HOME/.virtualenv_ida"
+"$HOME/.virtualenv_ida/bin/activate"
+# Install the packages you want to use in IDA Pro, for exemple ipython:
+pip install ipython
+----
+
+To activate the environement in IDA, add to your `idapythonrc.py`.
+
+ * `$HOME/.idapro/idapythonrc.py` for Linux and OS X users
+ * `%APPDATA%/Hex-Rays/IDA Pro/idapythonrc.py` on Windows
+
+[source, python]
+----
+# Activate virtualenv
+VIRTUAL_ENV_PATH = os.path.join(os.environ["HOME"], ".virtualenv_ida")
+VIRTUAL_ENV_ACTIVATE_PATH = os.path.join(VIRTUAL_ENV_PATH, \
+                                         "bin", "activate_this.py")
+
+execfile(VIRTUAL_ENV_ACTIVATE_PATH, dict(__file__=VIRTUAL_ENV_ACTIVATE_PATH))
+----
