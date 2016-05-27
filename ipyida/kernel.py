@@ -8,15 +8,13 @@
 # Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 
-from PySide import QtCore
-
 from IPython.kernel.zmq.kernelapp import IPKernelApp
 import IPython.utils.frame
 import IPython.kernel.zmq.iostream
 
 import sys
-
-_ida_ipython_qtimer = None
+import os
+import idaapi
 
 # The IPython kernel will override sys.std{out,err}. We keep a copy to let the
 # existing embeded IDA console continue working, and also let IPython output to
@@ -51,11 +49,11 @@ def wrap_excepthook(ipython_excepthook):
 
 class IPythonKernel(object):
     def __init__(self):
-        self._ida_ipython_qtimer = None
+        self._timer = None
         self.connection_file = None
     
     def start(self):
-        if self._ida_ipython_qtimer is not None:
+        if self._timer is not None:
             raise Exception("IPython kernel is already running.")
 
         # The IPKernelApp initialization is based on the IPython source for
@@ -98,31 +96,19 @@ class IPythonKernel(object):
     
         self.connection_file = app.connection_file
 
-        # Schedule the IPython kernel to run on the Qt main loop with a QTimer
-        qtimer = QtCore.QTimer()
-
-        # Use _poll_interval as docuementented here:
-        # https://ipython.org/ipython-doc/dev/config/eventloops.html
-        qtimer.setInterval(int(1000 * app.kernel._poll_interval))
-        qtimer.timeout.connect(app.kernel.do_one_iteration)
-
-        qtimer.start()
-
-        # We keep tht qtimer in a global variable to this module to allow to
-        # manually stop the kernel later with stop_ipython_kernel.
-        # There's a second purpose: If there is no more reference to the QTimer,
-        # it will get garbage collected and the timer will stop calling
-        # kernel.do_one_iteration. Keep this in mind before removing this line.
-        self._ida_ipython_qtimer = qtimer
+        def ipython_kernel_iteration():
+            app.kernel.do_one_iteration()
+            return int(1000 * app.kernel._poll_interval)
+        self._timer = idaapi.register_timer(int(1000 * app.kernel._poll_interval), ipython_kernel_iteration)
 
     def stop(self):
-        if self._ida_ipython_qtimer is not None:
-            self._ida_ipython_qtimer.stop()
-        self._ida_ipython_qtimer = None
+        if self._timer is not None:
+            idaapi.unregister_timer(self._timer)
+        self._timer = None
         self.connection_file = None
         sys.stdout = _ida_stdout
         sys.stderr = _ida_stderr
 
     @property
     def started(self):
-        return self._ida_ipython_qtimer is not None
+        return self._timer is not None
