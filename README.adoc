@@ -2,52 +2,47 @@
 
 IPyIDA provides an improved console to is a python-only solution to use a
 IPython console in the context of IDA Pro. It spawns an IPython kernel that you
-can connect to with `ipython console --existing` (or `qtconsole` if you like
-fancy gui). You can then benefit from IPython's autocompletion, online help,
-monospaced font input field, and so on.
+can connect to with `ipython console --existing` in your shell or by opening a
+_QT Console_ window in IDA Pro with `<Shift-.>`. You can then benefit from
+IPython's autocompletion, online help, monospaced font input field, graphs, and
+so on.
 
 == Install
 
-=== tl;dr
+IPyIDA has been tested with IDA 6.6 and up on Windows, OS X and Linux.
 
-1. Install IPython and make sure the module visible inside IDA's console
-2. Copy or link `ida_python.py` inside `$HOME/.idapro` or
-   `%APPDATA%"/Hex-Rays/IDA Pro`
-3. (Optional) Start kernel when IDA Pro is launched by adding it the your
-   `idapythonrc.py`
+=== Fast and easy install
 
-=== Long version
+A script is provided to install IPyIDA and its dependencies automagically from
+the IDA console. Simply copy the following line to the IDA console.
 
-First, you need the IPython module to be accessible from IDA. If you type
-`import IPython` inside the IDA console and you don't see an `ImportError`, you
-should be good to go. There are several ways to do that. Check out
-`README.virtualenv.ad` to check how you can create a virtualenv for IDA.
-
-You must make also make `ida_ipython.py`
-
-=== Scripted version
-
-If you are lazy like me, you can copy paste the code bellow in your terminal
-and it should work:
-
-.Linux and OS X
-[source,bash]
+[source,python]
 ----
-git clone https://github.com/marc-etienne/ida_ipython.git
-cd ida_ipython
-pkdir -p "$HOME/.idapro"
-ln -s "$(pwd)"/ida_ipython.py "$HOME/.idapro/ida_ipython.py"
-echo 'import ida_ipython; ida_ipython.start_ipython_kernel()' >> "$HOME/.idapro/idapythonrc.py"
+import urllib2; exec urllib2.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py').read()
 ----
 
-.Windows
-[source,batch]
-----
-git clone https://github.com/marc-etienne/ida_ipython.git
-cd ida_ipython
-mklink %APPDATA%"/Hex-Rays/IDA Pro/ida_ipython.py" %CWD%/ida_ipython.py
-echo "import ida_ipython; ida_ipython.start_ipython_kernel()" >> %APPDATA%"/Hex-Rays/IDA Pro/idapythonrc.py"
-----
+The script will do the following:
+
+1. Install `pip` if it's not already install
+2. Install the ipyida package from the `stable` branch
+3. Load the ipyida plugin
+4. Add a few lines to your `idapythonrc.py` so it's loaded at the proper time
+   when IDA starts.
+
+You can inspect the link:install_from_ida.py script if you which to see exactly
+what it does.
+
+WARNING: Don't panic. It's normal to see Windows' command prompt window open
+         during the installation on Windows.
+
+=== Install it the IDA way
+
+This is *not* the recommend way of installing IPyIDA but if you insist, you can
+copy the `ipyida_plugin_stub.py` and the `ipyida` directory inside IDA's
+`plugins` directory.
+
+This method requires that you manage dependencies on your own. IPyIDA requires
+the `ipython[qtconsole]==3.2.3` package.
 
 == Caveats
 
@@ -74,11 +69,17 @@ defaults write com.hexrays.idaq   NSAppSleepDisabled -bool YES
 defaults write com.hexrays.idaq64 NSAppSleepDisabled -bool YES
 ----
 
+=== IPython version >= 4.0 (Jupyter) not yet tested
+
+I haven't had time to test if it works on Jupyter, but I don't think it will out
+of the box. I'll try that later; for now IPython 3 provides pretty much
+everything I need.
+
 == Similar work
 
-james91b also successfully integrated a IPython kernel. Being a non-Windows IDA
-user, I needed something cross-platform and took a different approach to
-implement it. IPyIDA uses a Python only Windows-only by james91b it is also
-available on Github at the following
-
-- https://github.com/james91b/ida_ipython
+@james91b also successfully integrated a IPython kernel in IDA. Being a
+non-Windows IDA user, I needed something cross-platform and took a Python-only
+approach to implement it. Although the some of the implementation idea comes
+from that project, IPyIDA was written from scratch. Hat tip to @james91b and all
+IDA_IPython contributors. IDA_IPython is available on Github at
+https://github.com/james91b/ida_ipython.
