@@ -78,7 +78,7 @@ class IPythonKernel(object):
             if main is not None:
                 sys.modules[app.kernel.shell._orig_sys_modules_main_name] = main
         
-            # IPython <= 3.2.1 will send exception to sys.__stderr__ instead of
+            # IPython <= 3.2.x will send exception to sys.__stderr__ instead of
             # sys.stderr. IDA's console will not be able to display exceptions if we
             # don't send it to IDA's sys.stderr. To fix this, we call both the
             # ipython's and IDA's excepthook (IDA's excepthook is actually Python's
