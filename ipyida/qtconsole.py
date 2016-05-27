@@ -1,21 +1,46 @@
 # -*- encoding: utf8 -*-
 #
-# This module integreate a qtconsole the the IDA GUI.
+# This module integreate a qtconsole to the IDA GUI.
 # See README.adoc for more details.
 #
 # Copyright (c) 2015 Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 
-from PySide import QtCore, QtGui
 import idaapi
+
+def is_using_pyqt5():
+    if hasattr(idaapi, "get_kernel_version"):
+        _ida_version_major, _ida_version_minor = map(int, idaapi.get_kernel_version().split("."))
+        return _ida_version_major > 6 or (_ida_version_major == 6 and _ida_version_minor >= 9)
+    else:
+        return False
+
+if is_using_pyqt5():
+    from PyQt5 import QtGui, QtWidgets
+else:
+    from PySide import QtGui
+
 import sys
 import ipyida.kernel
 
 # QtSvg binairies are not bundled with IDA. So we monkey patch PySide to avoid
-# IPython to load a module with missing binary files. This must happend before
+# IPython to load a module with missing binary files. This *must* happend before
 # importing RichIPythonWidget
-import PySide
-PySide.QtSvg = None
+if is_using_pyqt5():
+    # In the case of pyqt5, we have to avoid patch the binding detection too.
+    import IPython.external.qt_loaders
+    original_has_binding = IPython.external.qt_loaders.has_binding
+    def hooked_has_bindings(arg):
+        if arg == 'pyqt5':
+            return True
+        else:
+            return original_has_binding(arg)
+    IPython.external.qt_loaders.has_binding = hooked_has_bindings
+    import PyQt5
+    PyQt5.QtSvg = None
+else:
+    import PySide
+    PySide.QtSvg = None
 
 from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.qt.manager import QtKernelManager
@@ -30,7 +55,10 @@ class IPythonConsole(idaapi.PluginForm):
     
     def OnCreate(self, form):
         try:
-            self.parent = self.FormToPySideWidget(form, ctx=sys.modules[__name__])
+            if is_using_pyqt5():
+                self.parent = self.FormToPyQtWidget(form, ctx=sys.modules[__name__])
+            else:
+                self.parent = self.FormToPySideWidget(form, ctx=sys.modules[__name__])
             layout = self._createConsoleWidget()
             self.parent.setLayout(layout)
         except:
@@ -38,7 +66,10 @@ class IPythonConsole(idaapi.PluginForm):
             print(traceback.format_exc())
 
     def _createConsoleWidget(self):
-        layout = QtGui.QVBoxLayout()
+        if is_using_pyqt5():
+            layout = QtWidgets.QVBoxLayout()
+        else:
+            layout = QtGui.QVBoxLayout()
         connection_file = find_connection_file(self.connection_file)
         self.kernel_manager = QtKernelManager(connection_file=connection_file)
         self.kernel_manager.load_connection_file()
@@ -63,4 +94,3 @@ class IPythonConsole(idaapi.PluginForm):
             import traceback
             print(traceback.format_exc())
 
-#instance = IPythonConsole()
