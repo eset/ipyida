@@ -22,6 +22,12 @@ import idaapi
 _ida_stdout = sys.stdout
 _ida_stderr = sys.stderr
 
+if sys.__stdout__.fileno() < 0:
+    # IPython insist on using sys.__stdout__, however it's not available in IDA
+    # on Windows. We'll replace __stdout__ to the "nul" to avoid exception when
+    # writing and flushing on the bogus file descriptor.
+    sys.__stdout__ = open(os.devnull, "w")
+
 # IPython will override sys.excepthook and send exception to sys.__stderr__. IDA
 # expect exception to be written to sys.stderr (overridden by IDA) to print them
 # in the console window. Used by wrap_excepthook.
