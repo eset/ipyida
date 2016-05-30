@@ -80,8 +80,12 @@ else:
         rc.write("# END IPyIDA loading code\n")
     print("[+] IPyIDA loading script already added to idapythonrc.py")
 
-import ipyida.ida_plugin
-ipyida.ida_plugin.load()
+try:
+    import ipyida.ida_plugin
+    ipyida.ida_plugin.load()
+except ImportError:
+    print("[-] IPyIDA package installed but could not be imported")
+    raise
 
 if os.name == 'nt':
     # No party for Windows
