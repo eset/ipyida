@@ -29,8 +29,8 @@ The script will do the following:
 4. Add a few lines to your `idapythonrc.py` so it's loaded at the proper time
    when IDA starts.
 
-You can inspect the link:install_from_ida.py script if you which to see exactly
-what it does.
+You can inspect the link:install_from_ida.py[] script if you which to see
+exactly what it does.
 
 WARNING: Don't panic. It's normal to see Windows' command prompt window open
          during the installation on Windows.
