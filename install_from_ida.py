@@ -49,11 +49,10 @@ except ImportError:
         print("[-] Could not install pip.")
         raise
 
-
-if pip.main(["install", "-U", IPYIDA_PACKAGE_LOCATION]) != 0:
-    print("[-] ipyida package installation failed")
-    raise Exception("ipyida package installation failed")
-
+if pip.main(["install", "--upgrade", IPYIDA_PACKAGE_LOCATION]) != 0:
+    print("[.] ipyida system-wide package installation failed, trying user install")
+    if pip.main(["install", "--upgrade", "--user", IPYIDA_PACKAGE_LOCATION]) != 0:
+        raise Exception("ipyida package installation failed")
 
 if not os.path.exists(idaapi.get_user_idadir()):
     os.path.makedirs(idaapi.get_user_idadir(), 0755)
