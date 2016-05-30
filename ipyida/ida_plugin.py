@@ -14,7 +14,7 @@ class IPyIDAPlugIn(idaapi.plugin_t):
     wanted_hotkey = "Shift-."
     flags = 0
     comment = ""
-    help = "TODO"
+    help = "Starts an IPython qtconsole in IDA Pro"
     
     def init(self):
         global _kernel
