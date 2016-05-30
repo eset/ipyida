@@ -8,7 +8,7 @@
 from distutils.core import setup
 
 setup(name='ipyida',
-      version='0.9',
+      version='1.0',
       description='IDA plugin to embed the IPython console inside IDA',
       author='Marc-Etienne M.Léveillé',
       author_email='leveille@eset.com',
