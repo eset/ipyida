@@ -9,6 +9,8 @@
 import idaapi
 import os
 import sys
+from contextlib import contextmanager
+import tempfile
 
 if not "IPYIDA_PACKAGE_LOCATION" in dir():
     IPYIDA_PACKAGE_LOCATION = "https://github.com/eset/ipyida/archive/stable.tar.gz"
@@ -26,6 +28,21 @@ if not hasattr(sys, 'real_executable'):
     else:
         sys.executable = os.path.join(sys.prefix, 'bin', 'python')
 
+# IDA Python sets sys.stdout to a file-like object IDAPythonStdOut. It doesn't
+# have things like fileno, close, etc. This helper uses a file and redirect the
+# content back to IDA's stdout.
+@contextmanager
+def temp_file_as_stdout():
+    ida_stdout = sys.stdout
+    try:
+        with tempfile.TemporaryFile() as f:
+            sys.stdout = f
+            yield
+            f.seek(0)
+            ida_stdout.write(f.read())
+    finally:
+        sys.stdout = ida_stdout
+
 try:
     import pip
     print("[+] Using already installed pip (version {:s})".format(pip.__version__))
@@ -34,25 +51,24 @@ except ImportError:
     import urllib2
     import subprocess
     get_pip = urllib2.urlopen("https://bootstrap.pypa.io/get-pip.py").read()
-    stdout = None
-    if sys.platform != "win32":
-        stdout = sys.stdout
-    p = subprocess.Popen(
-        sys.executable,
-        stdin=subprocess.PIPE,
-        stdout=stdout
-    )
-    p.communicate(get_pip)
+    with temp_file_as_stdout():
+        p = subprocess.Popen(
+            sys.executable,
+            stdin=subprocess.PIPE,
+            stdout=sys.stdout
+        )
+        p.communicate(get_pip)
     try:
         import pip
     except:
         print("[-] Could not install pip.")
         raise
 
-if pip.main(["install", "--upgrade", IPYIDA_PACKAGE_LOCATION]) != 0:
-    print("[.] ipyida system-wide package installation failed, trying user install")
-    if pip.main(["install", "--upgrade", "--user", IPYIDA_PACKAGE_LOCATION]) != 0:
-        raise Exception("ipyida package installation failed")
+with temp_file_as_stdout():
+    if pip.main(["install", "--upgrade", IPYIDA_PACKAGE_LOCATION]) != 0:
+        print("[.] ipyida system-wide package installation failed, trying user install")
+        if pip.main(["install", "--upgrade", "--user", IPYIDA_PACKAGE_LOCATION]) != 0:
+            raise Exception("ipyida package installation failed")
 
 if not os.path.exists(idaapi.get_user_idadir()):
     os.path.makedirs(idaapi.get_user_idadir(), 0755)
