@@ -21,7 +21,6 @@ else:
     from PySide import QtGui
 
 import sys
-import ipyida.kernel
 
 # QtSvg binairies are not bundled with IDA. So we monkey patch PySide to avoid
 # IPython to load a module with missing binary files. This *must* happend before
@@ -42,10 +41,24 @@ else:
     import PySide
     PySide.QtSvg = None
 
-from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-from IPython.qt.manager import QtKernelManager
-from IPython.qt.client import QtKernelClient
-from IPython.lib.kernel import find_connection_file
+
+# This is an ugly hack to fix import problems with Jupyter.
+# Since `qtconsole.qt_loaders.load_qt` explicitly tries to load
+# the `QtSvg` module using `imp.find_module` we have to manually
+# fool it.
+import imp
+
+find_module = imp.find_module
+def my_find_module(name, path=None):
+    if name == 'QtSvg':
+        return True
+    return find_module(name, path)
+imp.find_module = my_find_module
+
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from qtconsole.manager import QtKernelManager
+from qtconsole.client import QtKernelClient
+from jupyter_client import find_connection_file
 
 class IPythonConsole(idaapi.PluginForm):
     
@@ -77,7 +90,7 @@ class IPythonConsole(idaapi.PluginForm):
         self.kernel_client = self.kernel_manager.client()
         self.kernel_client.start_channels()
 
-        self.ipython_widget = RichIPythonWidget(self.parent)
+        self.ipython_widget = RichJupyterWidget(self.parent)
         self.ipython_widget.kernel_manager = self.kernel_manager
         self.ipython_widget.kernel_client = self.kernel_client
         layout.addWidget(self.ipython_widget)
