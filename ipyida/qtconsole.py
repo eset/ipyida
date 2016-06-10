@@ -21,7 +21,6 @@ else:
     from PySide import QtGui
 
 import sys
-import ipyida.kernel
 
 # QtSvg binairies are not bundled with IDA. So we monkey patch PySide to avoid
 # IPython to load a module with missing binary files. This *must* happend before
