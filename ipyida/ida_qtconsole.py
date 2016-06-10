@@ -24,36 +24,22 @@ import sys
 
 # QtSvg binairies are not bundled with IDA. So we monkey patch PySide to avoid
 # IPython to load a module with missing binary files. This *must* happend before
-# importing RichIPythonWidget
+# importing RichJupyterWidget
 if is_using_pyqt5():
     # In the case of pyqt5, we have to avoid patch the binding detection too.
-    import IPython.external.qt_loaders
-    original_has_binding = IPython.external.qt_loaders.has_binding
+    import qtconsole.qt_loaders
+    original_has_binding = qtconsole.qt_loaders.has_binding
     def hooked_has_bindings(arg):
         if arg == 'pyqt5':
             return True
         else:
             return original_has_binding(arg)
-    IPython.external.qt_loaders.has_binding = hooked_has_bindings
+    qtconsole.qt_loaders.has_binding = hooked_has_bindings
     import PyQt5
     PyQt5.QtSvg = None
 else:
     import PySide
     PySide.QtSvg = None
-
-
-# This is an ugly hack to fix import problems with Jupyter.
-# Since `qtconsole.qt_loaders.load_qt` explicitly tries to load
-# the `QtSvg` module using `imp.find_module` we have to manually
-# fool it.
-import imp
-
-find_module = imp.find_module
-def my_find_module(name, path=None):
-    if name == 'QtSvg':
-        return True
-    return find_module(name, path)
-imp.find_module = my_find_module
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
