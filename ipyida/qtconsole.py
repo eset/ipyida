@@ -41,6 +41,20 @@ else:
     import PySide
     PySide.QtSvg = None
 
+
+# This is an ugly hack to fix import problems with Jupyter.
+# Since `qtconsole.qt_loaders.load_qt` explicitly tries to load
+# the `QtSvg` module using `imp.find_module` we have to manually
+# fool it.
+import imp
+
+find_module = imp.find_module
+def my_find_module(name, path=None):
+    if name == 'QtSvg':
+        return True
+    return find_module(name, path)
+imp.find_module = my_find_module
+
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
