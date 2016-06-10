@@ -7,7 +7,7 @@
 # See LICENSE file for redistribution.
 
 import idaapi
-from ipyida import qtconsole, kernel
+from ipyida import ida_qtconsole, kernel
 
 class IPyIDAPlugIn(idaapi.plugin_t):
     wanted_name = "IPyIDA"
@@ -26,7 +26,7 @@ class IPyIDAPlugIn(idaapi.plugin_t):
         if not self.kernel.started:
             self.kernel.start()
         if self.widget is None:
-            self.widget = qtconsole.IPythonConsole(self.kernel.connection_file)
+            self.widget = ida_qtconsole.IPythonConsole(self.kernel.connection_file)
         self.widget.Show()
 
     def term(self):
