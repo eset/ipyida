@@ -41,7 +41,7 @@ copy the `ipyida_plugin_stub.py` and the `ipyida` directory inside IDA's
 `plugins` directory.
 
 This method requires that you manage dependencies on your own. IPyIDA requires
-the `ipython[qtconsole]==3.2.3` package.
+the `ipykernel` and `qtconsole` package.
 
 == Caveats
 
@@ -67,12 +67,6 @@ Here is how to disable App Nap for IDA Pro:
 defaults write com.hexrays.idaq   NSAppSleepDisabled -bool YES
 defaults write com.hexrays.idaq64 NSAppSleepDisabled -bool YES
 ----
-
-=== IPython version >= 4.0 (Jupyter) not yet tested
-
-I haven't had time to test if it works on Jupyter, but I don't think it will out
-of the box. I'll try that later; for now IPython 3 provides pretty much
-everything I need.
 
 == Similar work
 
