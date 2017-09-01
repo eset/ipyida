@@ -8,9 +8,9 @@
 # Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 
-from IPython.kernel.zmq.kernelapp import IPKernelApp
+from ipykernel.kernelapp import IPKernelApp
 import IPython.utils.frame
-import IPython.kernel.zmq.iostream
+import ipykernel.iostream
 
 import sys
 import os
@@ -33,7 +33,7 @@ if sys.__stdout__.fileno() < 0:
 # in the console window. Used by wrap_excepthook.
 _ida_excepthook = sys.excepthook
 
-class IDATeeOutStream(IPython.kernel.zmq.iostream.OutStream):
+class IDATeeOutStream(ipykernel.iostream.OutStream):
 
     def write(self, string):
         "Write on both the previously saved IDA std output and zmq's stream"
@@ -118,3 +118,11 @@ class IPythonKernel(object):
     @property
     def started(self):
         return self._timer is not None
+
+def do_one_iteration():
+    """Perform an iteration on IPython kernel runloop"""
+    if IPKernelApp.initialized():
+        app = IPKernelApp.instance()
+        app.kernel.do_one_iteration()
+    else:
+        raise Exception("Kernel is not initialized")

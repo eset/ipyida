@@ -21,31 +21,73 @@ else:
     from PySide import QtGui
 
 import sys
-import ipyida.kernel
 
 # QtSvg binairies are not bundled with IDA. So we monkey patch PySide to avoid
 # IPython to load a module with missing binary files. This *must* happend before
-# importing RichIPythonWidget
+# importing RichJupyterWidget
 if is_using_pyqt5():
     # In the case of pyqt5, we have to avoid patch the binding detection too.
-    import IPython.external.qt_loaders
-    original_has_binding = IPython.external.qt_loaders.has_binding
+    import qtconsole.qt_loaders
+    original_has_binding = qtconsole.qt_loaders.has_binding
     def hooked_has_bindings(arg):
         if arg == 'pyqt5':
             return True
         else:
             return original_has_binding(arg)
-    IPython.external.qt_loaders.has_binding = hooked_has_bindings
+    qtconsole.qt_loaders.has_binding = hooked_has_bindings
     import PyQt5
     PyQt5.QtSvg = None
+    PyQt5.QtPrintSupport = type("EmptyQtPrintSupport", (), {})
 else:
     import PySide
     PySide.QtSvg = None
+    PySide.QtPrintSupport = type("EmptyQtPrintSupport", (), {})
 
-from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
-from IPython.qt.manager import QtKernelManager
-from IPython.qt.client import QtKernelClient
-from IPython.lib.kernel import find_connection_file
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from qtconsole.manager import QtKernelManager
+from qtconsole.client import QtKernelClient
+from jupyter_client import find_connection_file
+import ipyida.kernel
+
+class IdaRichJupyterWidget(RichJupyterWidget):
+    def _is_complete(self, source, interactive):
+        # The original implementation in qtconsole is synchronous. IDA Python is
+        # single threaded and the IPython kernel runs on the same thread as the
+        # UI so the is_complete request can never be processed by the kernel,
+        # which results in always returning (False, '') and having to to
+        # <Shift-Enter> to execute a command.
+        #
+        # Our solution here was to copy the original _is_complete and call the
+        # kernel's do_one_iteration before expecting a reply. Original implemetation is in:
+        # https://github.com/jupyter/qtconsole/blob/4.3.1/qtconsole/frontend_widget.py#L260
+        try:
+            from queue import Empty
+        except ImportError:
+            from Queue import Empty
+        kc = self.blocking_client
+        if kc is None:
+            self.log.warn("No blocking client to make is_complete requests")
+            return False, u''
+        msg_id = kc.is_complete(source)
+        MAX_RETRY_COUNT = 5
+        retry_count = 0
+        is_complete_timeout = self.is_complete_timeout / float(MAX_RETRY_COUNT)
+        while True:
+            try:
+                ipyida.kernel.do_one_iteration()
+                reply = kc.shell_channel.get_msg(block=True, timeout=is_complete_timeout)
+            except Empty:
+                ipyida.kernel.do_one_iteration()
+                if retry_count < MAX_RETRY_COUNT:
+                    retry_count += 1
+                    continue
+                else:
+                    # assume incomplete output if we get no reply in time
+                    return False, u''
+            if reply['parent_header'].get('msg_id', None) == msg_id:
+                status = reply['content'].get('status', u'complete')
+                indent = reply['content'].get('indent', u'')
+                return status != 'incomplete', indent
 
 class IPythonConsole(idaapi.PluginForm):
     
@@ -77,7 +119,7 @@ class IPythonConsole(idaapi.PluginForm):
         self.kernel_client = self.kernel_manager.client()
         self.kernel_client.start_channels()
 
-        self.ipython_widget = RichIPythonWidget(self.parent)
+        self.ipython_widget = IdaRichJupyterWidget(self.parent)
         self.ipython_widget.kernel_manager = self.kernel_manager
         self.ipython_widget.kernel_client = self.kernel_client
         layout.addWidget(self.ipython_widget)
