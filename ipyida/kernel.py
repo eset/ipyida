@@ -118,3 +118,11 @@ class IPythonKernel(object):
     @property
     def started(self):
         return self._timer is not None
+
+def do_one_iteration():
+    """Perform an iteration on IPython kernel runloop"""
+    if IPKernelApp.initialized():
+        app = IPKernelApp.instance()
+        app.kernel.do_one_iteration()
+    else:
+        raise Exception("Kernel is not initialized")
