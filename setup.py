@@ -15,8 +15,8 @@ setup(name='ipyida',
       url='https://www.github.com/eset/ipyida',
       packages=['ipyida'],
       install_requires=[
-          'ipykernel',
-          'qtconsole'
+          'ipykernel>=4.6',
+          'qtconsole>=4.3'
       ],
       license="BSD",
 )
