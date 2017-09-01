@@ -37,13 +37,11 @@ if is_using_pyqt5():
     qtconsole.qt_loaders.has_binding = hooked_has_bindings
     import PyQt5
     PyQt5.QtSvg = None
-    class Empty: pass
-    PyQt5.QtPrintSupport = Empty()
+    PyQt5.QtPrintSupport = type("EmptyQtPrintSupport", (), {})
 else:
     import PySide
     PySide.QtSvg = None
-    class Empty: pass
-    PySide.QtPrintSupport = Empty()
+    PySide.QtPrintSupport = type("EmptyQtPrintSupport", (), {})
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
