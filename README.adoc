@@ -34,6 +34,10 @@ exactly what it does.
 WARNING: Don't panic. It's normal to see Windows' command prompt window open
          during the installation on Windows.
 
+==== Upgrading
+
+Rerun the install script to update to the latest version and restart IDA.
+
 === Install it the IDA way
 
 This is *not* the recommend way of installing IPyIDA but if you insist, you can
