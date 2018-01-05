@@ -119,7 +119,15 @@ class IPythonConsole(idaapi.PluginForm):
         self.kernel_client = self.kernel_manager.client()
         self.kernel_client.start_channels()
 
-        self.ipython_widget = IdaRichJupyterWidget(self.parent)
+        widget_options = {}
+        if sys.platform.startswith('linux'):
+            # Some upstream bug crashes IDA when the ncurses completion is
+            # used. I'm not sure where the bug is exactly (IDA's Qt5 bindings?)
+            # but using the "droplist" instead works around the crash. The
+            # problem is present only on Linux.
+            # See: https://github.com/eset/ipyida/issues/8
+            widget_options["gui_completion"] = 'droplist'
+        self.ipython_widget = IdaRichJupyterWidget(self.parent, **widget_options)
         self.ipython_widget.kernel_manager = self.kernel_manager
         self.ipython_widget.kernel_client = self.kernel_client
         layout.addWidget(self.ipython_widget)
