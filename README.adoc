@@ -80,3 +80,21 @@ approach to implement it. Although the some of the implementation idea comes
 from that project, IPyIDA was written from scratch. Hat tip to @james91b and all
 IDA_IPython contributors. IDA_IPython is available on Github at
 https://github.com/james91b/ida_ipython.
+
+== Known Issues
+If you get this error message on Windows OS
+----
+urllib2.URLError: <urlopen error [Errno 1] _ssl.c:507: error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version>
+----
+
+Is related to get PIP to fix: download manually https://bootstrap.pypa.io/get-pip.py and save on IDA default python directory C:\Python27 and execute it.
+----
+cd C:\Python27
+python.exe get-pip.py
+----
+
+Back to IDA console and try again:
+[source,python]
+----
+import urllib2; exec urllib2.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py').read()
+----
