@@ -50,6 +50,13 @@ except ImportError:
     print("[+] Installing pip")
     import urllib2
     import subprocess
+
+    if sys.hexversion < 0x02070900:
+        # There are SSL problems with Python version < 2.7.9
+        # See https://github.com/eset/ipyida/issues/11
+        print("[-] IPyIDA installer requires Python 2.7.9 or newer")
+        raise Exception("Python >= 2.7.9 required")
+
     get_pip = urllib2.urlopen("https://bootstrap.pypa.io/get-pip.py").read()
     with temp_file_as_stdout():
         p = subprocess.Popen(
