@@ -12,6 +12,9 @@ import sys
 from contextlib import contextmanager
 import tempfile
 import subprocess
+import fileinput
+import pkg_resources
+import shutil
 
 if not "IPYIDA_PACKAGE_LOCATION" in dir():
     IPYIDA_PACKAGE_LOCATION = "https://github.com/eset/ipyida/archive/stable.tar.gz"
@@ -98,26 +101,27 @@ if os.path.exists(ida_python_rc_path):
         rc_file_content = rc.read()
 
 if "# BEGIN IPyIDA loading" in rc_file_content:
-    print("[+] IPyIDA loading script already present in idapythonrc.py")
-else:
-    with file(ida_python_rc_path, "a") as rc:
-        rc.write("\n")
-        rc.write("# BEGIN IPyIDA loading code\n")
-        rc.write("try:\n")
-        rc.write("  import ipyida.ida_plugin\n")
-        rc.write("  ipyida.ida_plugin.load()\n")
-        rc.write("except:\n")
-        rc.write("  print \"Could not load IPyIDA plugin. Verify that the \"\n")
-        rc.write("  print \"ipyida python package is installed.\"\n")
-        rc.write("# END IPyIDA loading code\n")
-    print("[+] IPyIDA loading script already added to idapythonrc.py")
+    print("[.] Old IPyIDA loading script present in idapythonrc.py. Removing.")
+    in_ipyida_block = False
+    for line in fileinput.input(ida_python_rc_path, inplace=1, backup='.ipyida_old'):
+        if line.startswith("# BEGIN IPyIDA loading code"):
+            in_ipyida_block = True
+        elif line.startswith("# END IPyIDA loading code"):
+            in_ipyida_block = False
+        elif not in_ipyida_block:
+            sys.stdout.write(line)
 
-try:
-    import ipyida.ida_plugin
-    ipyida.ida_plugin.load()
-except ImportError:
-    print("[-] IPyIDA package installed but could not be imported")
-    raise
+ipyida_stub_target_path = os.path.join(idaapi.get_user_idadir(), "plugins", "ipyida.py")
+if not os.path.exists(os.path.dirname(ipyida_stub_target_path)):
+    os.path.makedirs(os.path.dirname(ipyida_stub_target_path), 0755)
+
+shutil.copyfile(
+    pkg_resources.resource_filename("ipyida", "ipyida_plugin_stub.py"),
+    ipyida_stub_target_path
+)
+print("[+] ipyida.py added to user plugins")
+
+idaapi.load_plugin('ipyida.py')
 
 if os.name == 'nt':
     # No party for Windows
