@@ -22,11 +22,10 @@ import urllib2; exec urllib2.urlopen('https://github.com/eset/ipyida/raw/stable/
 
 The script will do the following:
 
-1. Install `pip` if it's not already install
-2. Install the ipyida package from the `stable` branch
-3. Load the ipyida plugin
-4. Add a few lines to your `idapythonrc.py` so it's loaded at the proper time
-   when IDA starts.
+1. Install `pip` if it's not already installed
+2. Install the `ipyida` package from the `stable` branch
+3. Copy `ipyida_plugin_stub.py` to the user's `plugins` directory
+4. Load the IPyIDA plugin
 
 You can inspect the link:install_from_ida.py[] script if you wish to see
 exactly what it does.
@@ -41,7 +40,7 @@ Rerun the install script to update to the latest version and restart IDA.
 === Install it the IDA way
 
 This is *not* the recommend way of installing IPyIDA but if you insist, you can
-copy the `ipyida_plugin_stub.py` and the `ipyida` directory inside IDA's
+copy `ipyida_plugin_stub.py` and the `ipyida` directory inside IDA's
 `plugins` directory.
 
 This method requires that you manage dependencies on your own. IPyIDA requires
