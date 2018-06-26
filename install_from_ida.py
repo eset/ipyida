@@ -125,6 +125,6 @@ idaapi.load_plugin('ipyida.py')
 
 if os.name == 'nt':
     # No party for Windows
-    print("[+] IPyIDA Installation successful.")
+    print("[+] IPyIDA Installation successful. Use <Shift+.> to open the console.")
 else:
-    print("[🍺] IPyIDA Installation successful.")
+    print("[🍺] IPyIDA Installation successful. Use <Shift+.> to open the console.")
