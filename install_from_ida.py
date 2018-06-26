@@ -11,6 +11,7 @@ import os
 import sys
 from contextlib import contextmanager
 import tempfile
+import subprocess
 
 if not "IPYIDA_PACKAGE_LOCATION" in dir():
     IPYIDA_PACKAGE_LOCATION = "https://github.com/eset/ipyida/archive/stable.tar.gz"
@@ -49,7 +50,6 @@ try:
 except ImportError:
     print("[+] Installing pip")
     import urllib2
-    import subprocess
 
     if sys.hexversion < 0x02070900:
         # There are SSL problems with Python version < 2.7.9
@@ -71,11 +71,21 @@ except ImportError:
         print("[-] Could not install pip.")
         raise
 
-with temp_file_as_stdout():
-    if pip.main(["install", "--upgrade", IPYIDA_PACKAGE_LOCATION]) != 0:
-        print("[.] ipyida system-wide package installation failed, trying user install")
-        if pip.main(["install", "--upgrade", "--user", IPYIDA_PACKAGE_LOCATION]) != 0:
-            raise Exception("ipyida package installation failed")
+def pip_install(package, extra_args=[]):
+    pip_install_cmd = [ sys.executable, "-m", "pip", "install", "--upgrade" ]
+    with temp_file_as_stdout():
+        p = subprocess.Popen(
+            pip_install_cmd + extra_args + [ package ],
+            stdin=subprocess.PIPE,
+            stdout=sys.stdout
+        )
+        ret = p.wait()
+    return ret
+
+if pip_install(IPYIDA_PACKAGE_LOCATION) != 0:
+    print("[.] ipyida system-wide package installation failed, trying user install")
+    if pip_install(IPYIDA_PACKAGE_LOCATION, [ "--user" ]) != 0:
+        raise Exception("ipyida package installation failed")
 
 if not os.path.exists(idaapi.get_user_idadir()):
     os.path.makedirs(idaapi.get_user_idadir(), 0755)
