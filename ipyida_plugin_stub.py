@@ -7,4 +7,8 @@
 # Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 
-from ipyida.ida_plugin import PLUGIN_ENTRY, IPyIDAPlugIn
+try:
+    from ipyida.ida_plugin import PLUGIN_ENTRY, IPyIDAPlugIn
+except ImportError:
+    print "[WARN] Could not load IPyIDA plugin. ipyida Python package " \
+          "doesn't seem to be installed."
