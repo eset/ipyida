@@ -2,7 +2,7 @@
 #
 # IDA plugin definition.
 #
-# Copyright (c) 2015 ESET
+# Copyright (c) 2015-2018 ESET
 # Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 

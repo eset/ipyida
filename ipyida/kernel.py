@@ -4,7 +4,7 @@
 # You need the IPython module to be accessible from IDA for this to work.
 # See README.adoc for more details.
 #
-# Copyright (c) 2015 ESET
+# Copyright (c) 2015-2018 ESET
 # Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 

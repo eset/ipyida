@@ -3,7 +3,8 @@
 # This module integreate a qtconsole to the IDA GUI.
 # See README.adoc for more details.
 #
-# Copyright (c) 2015 Marc-Etienne M.Léveillé <leveille@eset.com>
+# Copyright (c) 2015-2018 ESET
+# Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 
 import idaapi

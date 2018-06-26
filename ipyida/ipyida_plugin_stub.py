@@ -2,7 +2,7 @@
 #
 # Simple stub to drop in IDA's "plugins" directory.
 #
-# Copyright (c) 2016 ESET
+# Copyright (c) 2016-2018 ESET
 # Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 
