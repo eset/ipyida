@@ -17,7 +17,7 @@ import pkg_resources
 import shutil
 
 if not "IPYIDA_PACKAGE_LOCATION" in dir():
-    IPYIDA_PACKAGE_LOCATION = "https://github.com/eset/ipyida/archive/stable.tar.gz"
+    IPYIDA_PACKAGE_LOCATION = "ipyida"
 
 
 # Fix the sys.exectuable path. It's misleading in two cases:
