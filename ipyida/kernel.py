@@ -85,16 +85,6 @@ class IPythonKernel(object):
             # default).
             sys.excepthook = wrap_excepthook(sys.excepthook)
 
-        # Load the calling scope
-        (ida_module, ida_locals) = IPython.utils.frame.extract_module_locals(1)
-
-        if 'idaapi' not in ida_locals:
-            raise Exception("{0:s} must be called from idapythonrc.py or "
-                            "IDA's prompt.".format("IPythonKernel.start"))
-
-        app.kernel.user_module = ida_module
-        app.kernel.user_ns = ida_locals
-
         app.shell.set_completer_frame()
 
         app.kernel.start()
