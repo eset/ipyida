@@ -22,6 +22,9 @@ import idaapi
 _ida_stdout = sys.stdout
 _ida_stderr = sys.stderr
 
+# Init file.
+_ipyidarc = os.path.join(os.path.expanduser('~'), '.idapro', 'ipyidarc.py')
+
 if sys.__stdout__.fileno() < 0:
     # IPython insist on using sys.__stdout__, however it's not available in IDA
     # on Windows. We'll replace __stdout__ to the "nul" to avoid exception when
@@ -69,6 +72,10 @@ class IPythonKernel(object):
         if IPKernelApp.initialized():
             app = IPKernelApp.instance()
         else:
+            # Load ~/.idapro/ipyidarc.py into the user namespace if it exists.
+            if os.path.exists(_ipyidarc):
+                IPKernelApp.exec_files = [ _ipyidarc ]
+
             app = IPKernelApp.instance(
                 outstream_class='ipyida.kernel.IDATeeOutStream'
             )
