@@ -23,7 +23,7 @@ _ida_stdout = sys.stdout
 _ida_stderr = sys.stderr
 
 # Init file.
-_ipyidarc = os.path.join(os.path.expanduser('~'), '.idapro', 'ipyidarc.py')
+_ipyidarc = os.path.join(idaapi.get_user_idadir(), 'ipyidarc.py')
 
 if sys.__stdout__.fileno() < 0:
     # IPython insist on using sys.__stdout__, however it's not available in IDA
