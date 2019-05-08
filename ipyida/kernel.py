@@ -23,7 +23,7 @@ _ida_stdout = sys.stdout
 _ida_stderr = sys.stderr
 
 # Init file.
-_ipyidarc = os.path.join(idaapi.get_user_idadir(), 'ipyidarc.py')
+IPYIDARC_PATH = os.path.join(idaapi.get_user_idadir(), 'ipyidarc.py')
 
 if sys.__stdout__.fileno() < 0:
     # IPython insist on using sys.__stdout__, however it's not available in IDA
@@ -73,8 +73,8 @@ class IPythonKernel(object):
             app = IPKernelApp.instance()
         else:
             # Load ~/.idapro/ipyidarc.py into the user namespace if it exists.
-            if os.path.exists(_ipyidarc):
-                IPKernelApp.exec_files = [ _ipyidarc ]
+            if os.path.exists(IPYIDARC_PATH):
+                IPKernelApp.exec_files = [ IPYIDARC_PATH ]
 
             app = IPKernelApp.instance(
                 outstream_class='ipyida.kernel.IDATeeOutStream'
