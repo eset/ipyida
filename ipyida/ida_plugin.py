@@ -20,6 +20,7 @@ class IPyIDAPlugIn(idaapi.plugin_t):
         global _kernel
         self.kernel = _kernel
         self.widget = None
+        monkey_patch_IDAPython_ExecScript()
         return idaapi.PLUGIN_KEEP
 
     def run(self, args):
@@ -72,3 +73,30 @@ def load():
     else:
         # IDA is fully loaded and an idb is open, just load the plugin.
         _do_load()
+
+def monkey_patch_IDAPython_ExecScript():
+    """
+    This funtion wraps IDAPython_ExecScript to avoid having an empty string has
+    a __file__ attribute of a module.
+    See https://github.com/idapython/src/pull/23
+    """
+    # Test the behavior IDAPython_ExecScript see if it needs patching
+    import sys, os
+    fake_globals = {}
+    idaapi.IDAPython_ExecScript(os.devnull, fake_globals, False)
+    if "__file__" in fake_globals:
+        # Monkey patch IDAPython_ExecScript
+        original_IDAPython_ExecScript = idaapi.IDAPython_ExecScript
+        def IDAPython_ExecScript_wrap(script, g, print_error=True):
+            has_file = "__file__" in g
+            try:
+                original_IDAPython_ExecScript(script, g, print_error)
+            finally:
+                if not has_file and "__file__" in g:
+                    del g["__file__"]
+        idaapi.IDAPython_ExecScript = IDAPython_ExecScript_wrap
+        # Remove the empty strings on existing modules
+        for mod_name in sys.modules:
+            if hasattr(sys.modules[mod_name], "__file__") and \
+               bool(sys.modules[mod_name].__file__) is False:
+                del sys.modules[mod_name].__file__
