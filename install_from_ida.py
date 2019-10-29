@@ -52,6 +52,8 @@ try:
     print("[+] Using already installed pip (version {:s})".format(pip.__version__))
 except ImportError:
     print("[+] Installing pip")
+    # pip is built-in Python 3 since 3.4, so we assume Python 2 here
+    # We won't support Python >= 3.0 and < 3.4 unless there's a high demand
     import urllib2
 
     if sys.hexversion < 0x02070900:
