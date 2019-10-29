@@ -99,7 +99,7 @@ ida_python_rc_path = os.path.join(idaapi.get_user_idadir(), "idapythonrc.py")
 rc_file_content = ""
 
 if os.path.exists(ida_python_rc_path):
-    with file(ida_python_rc_path, "r") as rc:
+    with open(ida_python_rc_path, "r") as rc:
         rc_file_content = rc.read()
 
 if "# BEGIN IPyIDA loading" in rc_file_content:
