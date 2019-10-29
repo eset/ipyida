@@ -1,14 +1,17 @@
 = IPyIDA
 
-IPyIDA is a python-only solution to use a IPython console in the context of IDA
-Pro. It spawns an IPython kernel that you can connect to with `ipython console
---existing` in your shell or by opening a _QT Console_ window in IDA Pro with
-`<Shift-.>`. You can then benefit from IPython's autocompletion, online help,
-monospaced font input field, graphs, and so on.
+IPyIDA is a python-only solution to add an IPython console to IDA Pro. Use
+`<Shift-.>` to open a window with an embedded _Qt console_. You can then
+benefit from IPython's autocompletion, online help, monospaced font input
+field, graphs, and so on.
+
+You can also connect to the kernel outside of IDA using `ipython console
+--existing`.
 
 == Install
 
-IPyIDA has been tested with IDA 6.6 and up on Windows, OS X and Linux.
+IPyIDA has been tested with IDA 6.6 and up on Windows, OS X and Linux, up to
+7.4.
 
 === Fast and easy install
 
