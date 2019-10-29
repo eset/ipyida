@@ -152,7 +152,17 @@ class IPythonConsole(idaapi.PluginForm):
         return layout
 
     def Show(self, name="IPython Console"):
-        return idaapi.PluginForm.Show(self, name)
+        r = idaapi.PluginForm.Show(self, name)
+        self.setFocusToPrompt()
+        return r
+
+    def setFocusToPrompt(self):
+        # This relies on the internal _control widget but it's the most reliable
+        # way I found so far.
+        if hasattr(self.ipython_widget, "_control"):
+            self.ipython_widget._control.setFocus()
+        else:
+            print("[IPyIDA] setFocusToPrompt: Widget has no _control attribute.")
 
     def OnClose(self, form):
         try:
