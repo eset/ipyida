@@ -91,7 +91,7 @@ if pip_install(IPYIDA_PACKAGE_LOCATION) != 0:
         raise Exception("ipyida package installation failed")
 
 if not os.path.exists(idaapi.get_user_idadir()):
-    os.makedirs(idaapi.get_user_idadir(), 0755)
+    os.makedirs(idaapi.get_user_idadir(), 0o755)
 
 ida_python_rc_path = os.path.join(idaapi.get_user_idadir(), "idapythonrc.py")
 rc_file_content = ""
@@ -113,7 +113,7 @@ if "# BEGIN IPyIDA loading" in rc_file_content:
 
 ipyida_stub_target_path = os.path.join(idaapi.get_user_idadir(), "plugins", "ipyida.py")
 if not os.path.exists(os.path.dirname(ipyida_stub_target_path)):
-    os.makedirs(os.path.dirname(ipyida_stub_target_path), 0755)
+    os.makedirs(os.path.dirname(ipyida_stub_target_path), 0o755)
 
 shutil.copyfile(
     pkg_resources.resource_filename("ipyida", "ipyida_plugin_stub.py"),
