@@ -15,9 +15,24 @@ IPyIDA has been tested with IDA 6.6 and up on Windows, OS X and Linux.
 A script is provided to install IPyIDA and its dependencies automagically from
 the IDA console. Simply copy the following line to the IDA console.
 
+.Python 2
 [source,python]
 ----
 import urllib2; exec urllib2.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py').read()
+----
+
+.Python 3
+[source,python]
+----
+import urllib; exec(urllib.request.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py').read())
+----
+
+On macOS, `Python3.framework` does not provide a trusted CA file. You can use
+the system-wide file `/etc/ssl/cert.pem`.
+
+[source,python]
+----
+import urllib; exec(urllib.request.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py', cafile="/etc/ssl/cert.pem").read())
 ----
 
 The script will do the following:
