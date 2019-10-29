@@ -64,6 +64,31 @@ copy `ipyida_plugin_stub.py` and the `ipyida` directory inside IDA's
 This method requires that you manage dependencies on your own. IPyIDA requires
 the `ipykernel` and `qtconsole` package.
 
+== Customizing the IPython console
+
+By default, the console does not have any globals available. If you want to
+have module imported before the console is opened, IPyIDA will read the
+`ipyidarc.py` file from the IDA user directory (`idaapi.get_user_idadir()`).
+Anything you import in this file will be available in the IPython console.
+
+The is similar to the `idapythonrc.py` file.
+
+=== Dark mode
+
+With a dark theme in IDA Pro, it's more convenient to also have a dark theme in
+the IPython console. To activate the dark theme built into `qtconsole`, add the
+following in your `ipyidarc.py`:
+
+[source, python]
+----
+import qtconsole.styles
+import ipyida.ida_qtconsole
+ipyida.ida_qtconsole.set_widget_options(dict(
+    style_sheet = qtconsole.styles.default_dark_style_sheet,
+    syntax_style = qtconsole.styles.default_dark_syntax_style
+))
+----
+
 == Caveats
 
 === Notebook not working
