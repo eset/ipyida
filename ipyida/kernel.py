@@ -26,7 +26,7 @@ _ida_stderr = sys.stderr
 # Similar to the idapythonrc.py file.
 IPYIDARC_PATH = os.path.join(idaapi.get_user_idadir(), 'ipyidarc.py')
 
-if sys.__stdout__.fileno() < 0:
+if sys.__stdout__ is None or sys.__stdout__.fileno() < 0:
     # IPython insist on using sys.__stdout__, however it's not available in IDA
     # on Windows. We'll replace __stdout__ to the "nul" to avoid exception when
     # writing and flushing on the bogus file descriptor.
