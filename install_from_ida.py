@@ -127,6 +127,12 @@ ipyida_stub_target_path = os.path.join(idaapi.get_user_idadir(), "plugins", "ipy
 if not os.path.exists(os.path.dirname(ipyida_stub_target_path)):
     os.makedirs(os.path.dirname(ipyida_stub_target_path), 0o755)
 
+# Make sure ipyida module is not the ipyida.py in the plugins folder, otherwise
+# pkg_resources will try to get file from there. This happends when package is
+# uninstalled, but ipyida.py is still in the plugin folder.
+if 'ipyida' in sys.modules:
+    del sys.modules['ipyida']
+
 shutil.copyfile(
     pkg_resources.resource_filename("ipyida", "ipyida_plugin_stub.py"),
     ipyida_stub_target_path
