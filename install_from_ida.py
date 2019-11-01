@@ -93,6 +93,14 @@ if pip_install(IPYIDA_PACKAGE_LOCATION) != 0:
     print("[.] ipyida system-wide package installation failed, trying user install")
     if pip_install(IPYIDA_PACKAGE_LOCATION, [ "--user" ]) != 0:
         raise Exception("ipyida package installation failed")
+    else:
+        # If no packages were installed in user site-packages, the path may
+        # not be in sys.path in current Python process. Importing ipyida will
+        # fail until Python (or IDA) is restarted. We can "refresh" sys.path
+        # using site.main().
+        import site
+        if site.getusersitepackages() not in sys.path:
+            site.main()
 
 if not os.path.exists(idaapi.get_user_idadir()):
     os.makedirs(idaapi.get_user_idadir(), 0o755)
