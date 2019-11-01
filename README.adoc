@@ -27,7 +27,7 @@ import urllib2; exec urllib2.urlopen('https://github.com/eset/ipyida/raw/stable/
 .Python 3
 [source,python]
 ----
-import urllib; exec(urllib.request.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py').read())
+import urllib.request; exec(urllib.request.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py').read())
 ----
 
 On macOS, `Python3.framework` does not provide a trusted CA file. You can use
@@ -35,7 +35,7 @@ the system-wide file `/etc/ssl/cert.pem`.
 
 [source,python]
 ----
-import urllib; exec(urllib.request.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py', cafile="/etc/ssl/cert.pem").read())
+import urllib.request; exec(urllib.request.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py', cafile="/etc/ssl/cert.pem").read())
 ----
 
 The script will do the following:
