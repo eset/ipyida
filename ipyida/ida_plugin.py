@@ -95,8 +95,12 @@ def monkey_patch_IDAPython_ExecScript():
                 if not has_file and "__file__" in g:
                     del g["__file__"]
         idaapi.IDAPython_ExecScript = IDAPython_ExecScript_wrap
-        # Remove the empty strings on existing modules
-        for mod_name in sys.modules:
-            if hasattr(sys.modules[mod_name], "__file__") and \
-               bool(sys.modules[mod_name].__file__) is False:
-                del sys.modules[mod_name].__file__
+        try:
+            # Remove the empty strings on existing modules
+            for mod_name in sys.modules:
+                if hasattr(sys.modules[mod_name], "__file__") and \
+                   bool(sys.modules[mod_name].__file__) is False:
+                    del sys.modules[mod_name].__file__
+        except RuntimeError:
+            # Best effort here, let's not crash if something goes wrong
+            pass
