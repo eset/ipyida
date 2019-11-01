@@ -141,8 +141,10 @@ print("[+] ipyida.py added to user plugins")
 
 idaapi.load_plugin(ipyida_stub_target_path)
 
-if os.name == 'nt':
-    # No party for Windows
+_ida_version = pkg_resources.parse_version(idaapi.get_kernel_version())
+
+if os.name == 'nt' and _ida_version < pkg_resources.parse_version("7.4"):
+    # No party for Windows with old IDA
     print("[+] IPyIDA Installation successful. Use <Shift+.> to open the console.")
 else:
     print("[🍺] IPyIDA Installation successful. Use <Shift+.> to open the console.")
