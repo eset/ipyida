@@ -8,7 +8,7 @@
 from setuptools import setup
 
 setup(name='ipyida',
-      version='1.3',
+      version='1.4',
       description='IDA plugin to embed the IPython console inside IDA',
       author='Marc-Etienne M.Léveillé',
       author_email='leveille@eset.com',
