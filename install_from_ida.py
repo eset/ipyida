@@ -67,7 +67,8 @@ except ImportError:
         p = subprocess.Popen(
             sys.executable,
             stdin=subprocess.PIPE,
-            stdout=sys.stdout
+            stdout=sys.stdout,
+            stderr=sys.stdout
         )
         p.communicate(get_pip)
     try:
@@ -82,7 +83,8 @@ def pip_install(package, extra_args=[]):
         p = subprocess.Popen(
             pip_install_cmd + extra_args + [ package ],
             stdin=subprocess.PIPE,
-            stdout=sys.stdout
+            stdout=sys.stdout,
+            stderr=sys.stdout
         )
         ret = p.wait()
     return ret
