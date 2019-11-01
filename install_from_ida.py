@@ -133,7 +133,7 @@ shutil.copyfile(
 )
 print("[+] ipyida.py added to user plugins")
 
-idaapi.load_plugin('ipyida.py')
+idaapi.load_plugin(ipyida_stub_target_path)
 
 if os.name == 'nt':
     # No party for Windows
