@@ -19,4 +19,11 @@ setup(name='ipyida',
           'qtconsole>=4.3'
       ],
       license="BSD",
+      classifiers=[
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Plugins",
+          "License :: OSI Approved :: BSD License",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+      ],
 )
