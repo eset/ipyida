@@ -31,6 +31,9 @@ if not hasattr(sys, 'real_executable'):
         sys.executable = os.path.join(sys.prefix, 'Python.exe')
     else:
         sys.executable = os.path.join(sys.prefix, 'bin', 'python')
+        if sys.version_info.major >= 3:
+            # Ready for Python 4?
+            sys.executable += str(sys.version_info.major)
 
 # IDA Python sets sys.stdout to a file-like object IDAPythonStdOut. It doesn't
 # have things like fileno, close, etc. This helper uses a file and redirect the
