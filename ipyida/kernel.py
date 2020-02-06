@@ -16,8 +16,6 @@ import sys
 import os
 import idaapi
 
-import asyncio
-
 # The IPython kernel will override sys.std{out,err}. We keep a copy to let the
 # existing embeded IDA console continue working, and also let IPython output to
 # it.
@@ -98,13 +96,23 @@ class IPythonKernel(object):
         app.shell.set_completer_frame()
 
         app.kernel.start()
-        app.kernel.do_one_iteration()
-    
-        self.connection_file = app.connection_file
 
+        # Do an iteration, and test for ipykernel >= 5.
+        f = app.kernel.do_one_iteration()
+        if type(f) != None:
+            # ipykernel >= 5, do_one_iteration() returns a Future object.
+            import tornado
+            tornado.ioloop.IOLoop.current().run_sync(lambda: f)
+            def do_iterate():
+                f = app.kernel.do_one_iteration()
+                tornado.ioloop.IOLoop.current().run_sync(lambda: f)
+        else:
+            def do_iterate(): app.kernel.do_one_iteration()
+            
+        self.connection_file = app.connection_file
+        
         def ipython_kernel_iteration():
-            f = app.kernel.do_one_iteration()
-            asyncio.get_event_loop().run_until_complete(f)
+            do_iterate()
             return int(1000 * app.kernel._poll_interval)
         self._timer = idaapi.register_timer(int(1000 * app.kernel._poll_interval), ipython_kernel_iteration)
 
