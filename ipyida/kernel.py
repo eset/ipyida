@@ -99,7 +99,7 @@ class IPythonKernel(object):
 
         # Do an iteration, and test for ipykernel >= 5.
         f = app.kernel.do_one_iteration()
-        if type(f) != None:
+        if f != None:
             # ipykernel >= 5, do_one_iteration() returns a Future object.
             import tornado
             tornado.ioloop.IOLoop.current().run_sync(lambda: f)
@@ -132,6 +132,9 @@ def do_one_iteration():
     """Perform an iteration on IPython kernel runloop"""
     if IPKernelApp.initialized():
         app = IPKernelApp.instance()
-        app.kernel.do_one_iteration()
+        f = app.kernel.do_one_iteration()
+        if f != None:
+            import tornado
+            tornado.ioloop.IOLoop.current().run_sync(lambda: f)
     else:
         raise Exception("Kernel is not initialized")
