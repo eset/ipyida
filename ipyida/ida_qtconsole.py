@@ -58,45 +58,45 @@ from qtconsole.client import QtKernelClient
 from jupyter_client import find_connection_file
 import ipyida.kernel
 
-class IdaRichJupyterWidget(RichJupyterWidget):
-    def _is_complete(self, source, interactive):
-        # The original implementation in qtconsole is synchronous. IDA Python is
-        # single threaded and the IPython kernel runs on the same thread as the
-        # UI so the is_complete request can never be processed by the kernel,
-        # which results in always returning (False, '') and having to to
-        # <Shift-Enter> to execute a command.
-        #
-        # Our solution here was to copy the original _is_complete and call the
-        # kernel's do_one_iteration before expecting a reply. Original implemetation is in:
-        # https://github.com/jupyter/qtconsole/blob/4.3.1/qtconsole/frontend_widget.py#L260
-        try:
-            from queue import Empty
-        except ImportError:
-            from Queue import Empty
-        kc = self.blocking_client
-        if kc is None:
-            self.log.warn("No blocking client to make is_complete requests")
-            return False, u''
-        msg_id = kc.is_complete(source)
-        MAX_RETRY_COUNT = 5
-        retry_count = 0
-        is_complete_timeout = self.is_complete_timeout / float(MAX_RETRY_COUNT)
-        while True:
-            try:
-                ipyida.kernel.do_one_iteration()
-                reply = kc.shell_channel.get_msg(block=True, timeout=is_complete_timeout)
-            except Empty:
-                ipyida.kernel.do_one_iteration()
-                if retry_count < MAX_RETRY_COUNT:
-                    retry_count += 1
-                    continue
-                else:
-                    # assume incomplete output if we get no reply in time
-                    return False, u''
-            if reply['parent_header'].get('msg_id', None) == msg_id:
-                status = reply['content'].get('status', u'complete')
-                indent = reply['content'].get('indent', u'')
-                return status != 'incomplete', indent
+# class IdaRichJupyterWidget(RichJupyterWidget):
+#     def _is_complete(self, source, interactive):
+#         # The original implementation in qtconsole is synchronous. IDA Python is
+#         # single threaded and the IPython kernel runs on the same thread as the
+#         # UI so the is_complete request can never be processed by the kernel,
+#         # which results in always returning (False, '') and having to to
+#         # <Shift-Enter> to execute a command.
+#         #
+#         # Our solution here was to copy the original _is_complete and call the
+#         # kernel's do_one_iteration before expecting a reply. Original implemetation is in:
+#         # https://github.com/jupyter/qtconsole/blob/4.3.1/qtconsole/frontend_widget.py#L260
+#         try:
+#             from queue import Empty
+#         except ImportError:
+#             from Queue import Empty
+#         kc = self.blocking_client
+#         if kc is None:
+#             self.log.warn("No blocking client to make is_complete requests")
+#             return False, u''
+#         msg_id = kc.is_complete(source)
+#         MAX_RETRY_COUNT = 5
+#         retry_count = 0
+#         is_complete_timeout = self.is_complete_timeout / float(MAX_RETRY_COUNT)
+#         while True:
+#             try:
+#                 ipyida.kernel.do_one_iteration()
+#                 reply = kc.shell_channel.get_msg(block=True, timeout=is_complete_timeout)
+#             except Empty:
+#                 ipyida.kernel.do_one_iteration()
+#                 if retry_count < MAX_RETRY_COUNT:
+#                     retry_count += 1
+#                     continue
+#                 else:
+#                     # assume incomplete output if we get no reply in time
+#                     return False, u''
+#             if reply['parent_header'].get('msg_id', None) == msg_id:
+#                 status = reply['content'].get('status', u'complete')
+#                 indent = reply['content'].get('indent', u'')
+#                 return status != 'incomplete', indent
 
 _user_widget_options = {}
 
@@ -152,7 +152,8 @@ class IPythonConsole(idaapi.PluginForm):
             # See: https://github.com/eset/ipyida/issues/8
             widget_options["gui_completion"] = 'droplist'
         widget_options.update(_user_widget_options)
-        self.ipython_widget = IdaRichJupyterWidget(self.parent, **widget_options)
+        #self.ipython_widget = IdaRichJupyterWidget(self.parent, **widget_options)
+        self.ipython_widget = RichJupyterWidget(self.parent, **widget_options)
         self.ipython_widget.kernel_manager = self.kernel_manager
         self.ipython_widget.kernel_client = self.kernel_client
         layout.addWidget(self.ipython_widget)
