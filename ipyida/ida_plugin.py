@@ -41,6 +41,20 @@ class IPyIDAPlugIn(idaapi.plugin_t):
 def PLUGIN_ENTRY():
     return IPyIDAPlugIn()
 
+# Links Qt's event loop with asyncio's event loop. This allows asyncio to
+# work properly, which is required for ipykernel >= 5 (more specifically,
+# because ipykernel uses tornado, which is backed by asyncio).
+def _setup_asyncio_event_loop():
+    if ida_qtconsole.is_using_pyqt5() and kernel.is_using_ipykernel_5():
+        from PyQt5.QtWidgets import QApplication
+        import asyncqt
+        import asyncio
+        qapp = QApplication.instance()
+        loop = asyncqt.QEventLoop(qapp)
+        asyncio.set_event_loop(loop)
+
+_setup_asyncio_event_loop()
+
 _kernel = kernel.IPythonKernel()
 _kernel.start()
 
