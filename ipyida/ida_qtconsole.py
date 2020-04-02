@@ -22,27 +22,35 @@ else:
     from PySide import QtGui
 
 import sys
+import os
+import types
 
 # QtSvg binairies are not bundled with IDA. So we monkey patch PySide to avoid
 # IPython to load a module with missing binary files. This *must* happend before
 # importing RichJupyterWidget
 if is_using_pyqt5():
-    # In the case of pyqt5, we have to avoid patch the binding detection too.
-    import qtconsole.qt_loaders
-    original_has_binding = qtconsole.qt_loaders.has_binding
-    def hooked_has_bindings(arg):
-        if arg == 'pyqt5':
-            return True
-        else:
-            return original_has_binding(arg)
-    qtconsole.qt_loaders.has_binding = hooked_has_bindings
+    try:
+        # In the case of pyqt5, we have to avoid patch the binding detection
+        # used in qtconsole <= 4.6.
+        import qtconsole.qt_loaders
+        original_has_binding = qtconsole.qt_loaders.has_binding
+        def hooked_has_bindings(arg):
+            if arg == 'pyqt5':
+                return True
+            else:
+                return original_has_binding(arg)
+        qtconsole.qt_loaders.has_binding = hooked_has_bindings
+    except ImportError:
+        # qtconsole.qt_loaders doesn't exist in qtconsole >= 4.7. It uses QtPy.
+        os.environ["QT_API"] = "pyqt5"
     import PyQt5
-    PyQt5.QtSvg = None
-    PyQt5.QtPrintSupport = type("EmptyQtPrintSupport", (), {})
+    sys.modules["PyQt5.QtSvg"] = types.ModuleType("EmptyQtSvg")
+    sys.modules["PyQt5.QtPrintSupport"] = types.ModuleType("EmptyQtPrintSupport")
 else:
     import PySide
-    PySide.QtSvg = None
-    PySide.QtPrintSupport = type("EmptyQtPrintSupport", (), {})
+    sys.modules["PySide.QtSvg"] = types.ModuleType("EmptyQtSvg")
+    sys.modules["PySide.QtPrintSupport"] = types.ModuleType("EmptyQtPrintSupport")
+    os.environ["QT_API"] = "pyside"
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
