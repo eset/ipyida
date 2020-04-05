@@ -174,7 +174,7 @@ class IPythonConsole(idaapi.PluginForm):
 
     def OnClose(self, form):
         try:
-            pass
+            self.kernel_client.stop_channels()
         except:
             import traceback
             print(traceback.format_exc())
