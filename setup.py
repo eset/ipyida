@@ -30,7 +30,7 @@ setup(name='ipyida',
       packages=['ipyida'],
       install_requires=[
           'ipykernel>=4.6, <5',
-          'qtconsole>=4.3'
+          'qtconsole>=4.3, <4.7'
       ],
       license="BSD",
       classifiers=[
