@@ -20,7 +20,7 @@ See full README on GitHub: <https://www.github.com/eset/ipyida>.
 """
 
 setup(name='ipyida',
-      version='1.4',
+      version='1.5',
       description='IDA plugin to embed the IPython console inside IDA',
       long_description=long_description,
       long_description_content_type="text/markdown",
