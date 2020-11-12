@@ -47,11 +47,14 @@ def PLUGIN_ENTRY():
 def _setup_asyncio_event_loop():
     if ida_qtconsole.is_using_pyqt5() and kernel.is_using_ipykernel_5():
         from PyQt5.QtWidgets import QApplication
-        import asyncqt
+        import qasync
         import asyncio
-        qapp = QApplication.instance()
-        loop = asyncqt.QEventLoop(qapp)
-        asyncio.set_event_loop(loop)
+        if isinstance(asyncio.get_event_loop(), qasync.QEventLoop):
+            print("Note: qasync event loop already set up.")
+        else:
+            qapp = QApplication.instance()
+            loop = qasync.QEventLoop(qapp, already_running=True)
+            asyncio.set_event_loop(loop)            
 
 _setup_asyncio_event_loop()
 
