@@ -83,14 +83,20 @@ def monkey_patch_IDAPython_ExecScript():
     # Test the behavior IDAPython_ExecScript see if it needs patching
     import sys, os
     fake_globals = {}
-    idaapi.IDAPython_ExecScript(os.devnull, fake_globals, False)
+    if idaapi.IDA_SDK_VERSION < 700:
+        idaapi.IDAPython_ExecScript(os.devnull, fake_globals)
+    else:
+        idaapi.IDAPython_ExecScript(os.devnull, fake_globals, False)
     if "__file__" in fake_globals:
         # Monkey patch IDAPython_ExecScript
         original_IDAPython_ExecScript = idaapi.IDAPython_ExecScript
         def IDAPython_ExecScript_wrap(script, g, print_error=True):
             has_file = "__file__" in g
             try:
-                original_IDAPython_ExecScript(script, g, print_error)
+                if idaapi.IDA_SDK_VERSION < 700:
+                    original_IDAPython_ExecScript(script, g)
+                else:
+                    original_IDAPython_ExecScript(script, g, print_error)
             finally:
                 if not has_file and "__file__" in g:
                     del g["__file__"]
