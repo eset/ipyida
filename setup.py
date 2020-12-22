@@ -31,7 +31,7 @@ setup(name='ipyida',
       install_requires=[
           'ipykernel>=4.6',
           'qtconsole>=4.3',
-          'qasync',
+          'qasync; python_version >= "3"',
       ],
       license="BSD",
       classifiers=[
