@@ -152,7 +152,10 @@ class IPythonConsole(idaapi.PluginForm):
             # See: https://github.com/eset/ipyida/issues/8
             widget_options["gui_completion"] = 'droplist'
         widget_options.update(_user_widget_options)
-        self.ipython_widget = IdaRichJupyterWidget(self.parent, **widget_options)
+        if ipyida.kernel.is_using_ipykernel_5():
+            self.ipython_widget = RichJupyterWidget(self.parent, **widget_options)
+        else:
+            self.ipython_widget = IdaRichJupyterWidget(self.parent, **widget_options)
         self.ipython_widget.kernel_manager = self.kernel_manager
         self.ipython_widget.kernel_client = self.kernel_client
         layout.addWidget(self.ipython_widget)

@@ -37,6 +37,11 @@ if sys.__stdout__ is None or sys.__stdout__.fileno() < 0:
 # in the console window. Used by wrap_excepthook.
 _ida_excepthook = sys.excepthook
 
+def is_using_ipykernel_5():
+    import ipykernel
+    return hasattr(ipykernel.kernelbase.Kernel, "process_one")
+
+
 class IDATeeOutStream(ipykernel.iostream.OutStream):
 
     def write(self, string):
@@ -96,14 +101,18 @@ class IPythonKernel(object):
         app.shell.set_completer_frame()
 
         app.kernel.start()
-        app.kernel.do_one_iteration()
-    
+
         self.connection_file = app.connection_file
 
-        def ipython_kernel_iteration():
+        if not is_using_ipykernel_5():
             app.kernel.do_one_iteration()
-            return int(1000 * app.kernel._poll_interval)
-        self._timer = idaapi.register_timer(int(1000 * app.kernel._poll_interval), ipython_kernel_iteration)
+
+            def ipython_kernel_iteration():
+                app.kernel.do_one_iteration()
+                return int(1000 * app.kernel._poll_interval)
+            self._timer = idaapi.register_timer(int(1000 * app.kernel._poll_interval), ipython_kernel_iteration)
+
+
 
     def stop(self):
         if self._timer is not None:
@@ -119,6 +128,8 @@ class IPythonKernel(object):
 
 def do_one_iteration():
     """Perform an iteration on IPython kernel runloop"""
+    if is_using_ipykernel_5():
+        raise Exception("Should not call this when ipykernel >= 5")
     if IPKernelApp.initialized():
         app = IPKernelApp.instance()
         app.kernel.do_one_iteration()
