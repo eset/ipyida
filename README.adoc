@@ -13,7 +13,7 @@ image::ipyida-screenshot.png[IPyIDA screenshot,width=100%]
 == Install
 
 IPyIDA has been tested with IDA 6.6 and up on Windows, OS X and Linux, up to
-7.4.
+7.6.
 
 === Fast and easy install
 
@@ -59,12 +59,13 @@ Rerun the install script to update to the latest version and restart IDA.
 
 === Install it the IDA way
 
-This is *not* the recommend way of installing IPyIDA but if you insist, you can
+If you'd rather manage the dependencies and updates yourself, you can
 copy `ipyida_plugin_stub.py` and the `ipyida` directory inside IDA's
 `plugins` directory.
 
 This method requires that you manage dependencies on your own. IPyIDA requires
-the `ipykernel` and `qtconsole` package.
+the `ipykernel` and `qtconsole` package, and the `qasync` package if using
+`ipykernel` version 5 or newer.
 
 == Customizing the IPython console
 
@@ -73,7 +74,7 @@ have module imported before the console is opened, IPyIDA will read the
 `ipyidarc.py` file from the IDA user directory (`idaapi.get_user_idadir()`).
 Anything you import in this file will be available in the IPython console.
 
-The is similar to the `idapythonrc.py` file.
+This is similar to the `idapythonrc.py` file.
 
 === Dark mode
 
