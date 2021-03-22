@@ -24,6 +24,34 @@ class IPyIDAPlugIn(idaapi.plugin_t):
         return idaapi.PLUGIN_KEEP
 
     def run(self, args):
+        # I'm not sure whether args were always wrapped in an object,
+        # so just incase, we will check for the case of `int`
+        if isinstance(args, int):
+            value = args
+        else:
+            value = getattr(args, 'value', 0)
+        
+        # trigger manual shutdown, ergo restart via:
+        #     ida_loader.load_and_run_plugin('ipyida', 2)
+        # then:
+        #     ida_loader.load_and_run_plugin('ipyida', 0)
+        #     (or press shift-. again)
+        if value == 2:
+            return self.term()
+
+        # enable diagnostics mode
+        if value == 3:
+            globals()['obj'] = self
+            print("""IPyIDA diagnostics instance created
+
+                instance be accessed via:
+                    import ipyida
+                    ipyida.ida_plugin.obj.*
+                e.g.  
+                    ipyida.ida_plugin.obj.term()
+            """)
+            return
+
         if not self.kernel.started:
             self.kernel.start()
         if self.widget is None:
