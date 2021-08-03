@@ -44,6 +44,25 @@ def is_using_ipykernel_5():
 
 class IDATeeOutStream(ipykernel.iostream.OutStream):
 
+    def _setup_stream_redirects(self, name):
+        # This method was added in ipykernel 6.0 to capture stdout and stderr
+        # outside the context of the kernel. It expects stdout and stderr
+        # to be file object, with a fileno.
+        # Since IDAPython replaces sys.std{out,err] with IDAPythonStdOut
+        # instances, redirecting output to the console
+        # We override this method to temporarly replace sys.std{out,err] with
+        # the original ones (before IDAPython replaced them) while this method
+        # is called.
+        # This method is only called on macOS and Linux.
+        # See: https://github.com/ipython/ipykernel/commit/ae2f441a
+        try:
+            ida_ios = sys.stdout, sys.stderr
+            sys.stdout = sys.modules["__main__"]._orig_stdout
+            sys.stderr = sys.modules["__main__"]._orig_stderr
+            return super(IDATeeOutStream, self)._setup_stream_redirects(name)
+        finally:
+            sys.stdout, sys.stderr = ida_ios
+
     def write(self, string):
         "Write on both the previously saved IDA std output and zmq's stream"
         if self.name == "stdout" and _ida_stdout:
