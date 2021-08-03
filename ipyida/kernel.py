@@ -14,6 +14,7 @@ import ipykernel.iostream
 
 import sys
 import os
+import logging
 import idaapi
 
 # The IPython kernel will override sys.std{out,err}. We keep a copy to let the
@@ -102,7 +103,12 @@ class IPythonKernel(object):
                 IPKernelApp.exec_files = [ IPYIDARC_PATH ]
 
             app = IPKernelApp.instance(
-                outstream_class='ipyida.kernel.IDATeeOutStream'
+                outstream_class='ipyida.kernel.IDATeeOutStream',
+                # We provide our own logger here because the default one from
+                # traitlets adds a handler that expect stderr to be a regular
+                # file object, and IDAPython's sys.stderr is actually a
+                # IDAPythonStdOut instance
+                log=logging.getLogger("ipyida_kernel")
             )
             app.initialize()
 
