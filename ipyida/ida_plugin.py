@@ -6,13 +6,14 @@
 # Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 
+import os
 import idaapi
 from ipyida import ida_qtconsole, kernel
 
 class IPyIDAPlugIn(idaapi.plugin_t):
     wanted_name = "IPyIDA"
     wanted_hotkey = "Shift-."
-    flags = 0
+    flags = idaapi.PLUGIN_FIX
     comment = ""
     help = "Starts an IPython qtconsole in IDA Pro"
     
@@ -21,6 +22,8 @@ class IPyIDAPlugIn(idaapi.plugin_t):
         self.kernel = _kernel
         self.widget = None
         monkey_patch_IDAPython_ExecScript()
+        if os.environ.get("JUPYTER_CONNECTION", None): # comes from jupyter
+            self.run(0)
         return idaapi.PLUGIN_KEEP
 
     def run(self, args):

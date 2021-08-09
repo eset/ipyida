@@ -38,6 +38,10 @@ if sys.__stdout__ is None or sys.__stdout__.fileno() < 0:
 # in the console window. Used by wrap_excepthook.
 _ida_excepthook = sys.excepthook
 
+# IPython will override sys.displayhook with ipykernel.displayhook.ZMQDisplayHook,
+# IDA relies on this to display REPR's result
+_ida_displayhook = sys.displayhook
+
 def is_using_ipykernel_5():
     import ipykernel
     return hasattr(ipykernel.kernelbase.Kernel, "process_one")
@@ -82,10 +86,21 @@ def wrap_excepthook(ipython_excepthook):
         ipython_excepthook(*args)
     return ipyida_excepthook
 
+def wrap_displayhook(ipython_displayhook):
+    """
+    Return a function that will call both the ipython kernel execepthook
+    and IDA's
+    """
+    def ipyida_displayhook(*args):
+        _ida_displayhook(*args)
+        ipython_displayhook(*args)
+    return ipyida_displayhook
+
+
 class IPythonKernel(object):
     def __init__(self):
         self._timer = None
-        self.connection_file = None
+        self.connection_file = os.environ.get("JUPYTER_CONNECTION", None)
     
     def start(self):
         if self._timer is not None:
@@ -102,15 +117,20 @@ class IPythonKernel(object):
             if os.path.exists(IPYIDARC_PATH):
                 IPKernelApp.exec_files = [ IPYIDARC_PATH ]
 
+            logger = logging.getLogger("ipyida_kernel")
             app = IPKernelApp.instance(
                 outstream_class='ipyida.kernel.IDATeeOutStream',
                 # We provide our own logger here because the default one from
                 # traitlets adds a handler that expect stderr to be a regular
                 # file object, and IDAPython's sys.stderr is actually a
                 # IDAPythonStdOut instance
-                log=logging.getLogger("ipyida_kernel")
+                log=logger
             )
-            app.initialize()
+            if self.connection_file:
+                app.initialize(['-f', self.connection_file])
+            else:
+                app.initialize()
+            logger.setLevel(logging.WARNING)
 
             main = app.kernel.shell._orig_sys_modules_main_mod
             if main is not None:
@@ -122,12 +142,19 @@ class IPythonKernel(object):
             # ipython's and IDA's excepthook (IDA's excepthook is actually Python's
             # default).
             sys.excepthook = wrap_excepthook(sys.excepthook)
+            # IPython will get REPR result by overriding displayhook. IDA's console
+            # will not be able to display REPR's return value if we don't call
+            # IDA's sys.displayhook. To fix this, we call both the ipython's and
+            # IDA's displayhook
+            sys.displayhook = wrap_displayhook(sys.displayhook)
 
         app.shell.set_completer_frame()
 
         app.kernel.start()
-
+        
         self.connection_file = app.connection_file
+
+        print("[ipyida] IPython Kernel initialized! You can connect using: \n        %s" % (self.connection_file))
 
         if not is_using_ipykernel_5():
             app.kernel.do_one_iteration()
