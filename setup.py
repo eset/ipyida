@@ -20,7 +20,7 @@ See full README on GitHub: <https://www.github.com/eset/ipyida>.
 """
 
 setup(name='ipyida',
-      version='1.7',
+      version='1.7.1',
       description='IDA plugin to embed the IPython console inside IDA',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -32,6 +32,7 @@ setup(name='ipyida',
           'ipykernel>=4.6',
           'qtconsole>=4.3',
           'qasync; python_version >= "3"',
+          'jupyter-client<6',
       ],
       license="BSD",
       classifiers=[
