@@ -30,6 +30,7 @@ setup(name='ipyida',
       packages=['ipyida'],
       install_requires=[
           'ipykernel>=4.6',
+          'ipykernel>=5.1.4; python_version >= "3.8" and platform_system=="Windows"',
           'qtconsole>=4.3',
           'qasync; python_version >= "3"',
           'jupyter-client<6.1.13',
