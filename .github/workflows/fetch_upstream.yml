@@ -1,0 +1,37 @@
+name: Scheduled Merge Remote Action
+on: 
+  schedule:
+    - cron: '0 */6 * * *'
+    # scheduled for 00:00 every Monday
+  workflow_dispatch:
+
+jobs:
+  merge-upstream:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: master             # set the branch to merge to
+          fetch-depth: 0
+      - name: Setup committer
+        run: |
+          git config --global user.email "misty@misty.moe"
+          git config --global user.name "NyaMisty"
+      - name: Merge Upstream
+        run: |
+          git remote add -f upstream "https://github.com/eset/ipyida" &&
+          git remote -v &&
+          git branch --all &&
+          git config --list &&
+          git checkout master &&
+          git rebase -v --fork-point upstream/master
+      #- name: Prepare to push  
+      #  run: git branch -f master
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+          force: true
+      - uses: gautamkrishnar/keepalive-workflow@master # using the workflow with default settings
