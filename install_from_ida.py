@@ -42,7 +42,7 @@ if not hasattr(sys, 'real_executable'):
 def temp_file_as_stdout():
     ida_stdout = sys.stdout
     try:
-        with tempfile.TemporaryFile("w") as f:
+        with tempfile.TemporaryFile("w+") as f:
             sys.stdout = f
             yield
             f.seek(0)
