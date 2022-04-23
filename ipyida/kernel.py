@@ -38,6 +38,9 @@ if sys.__stdout__ is None or sys.__stdout__.fileno() < 0:
 # in the console window. Used by wrap_excepthook.
 _ida_excepthook = sys.excepthook
 
+# Also keep a copy of IDAPython's displayhook to restore it after IPython's init
+_ida_displayhook = sys.displayhook
+
 def is_using_ipykernel_5():
     import ipykernel
     return hasattr(ipykernel.kernelbase.Kernel, "process_one")
@@ -122,6 +125,12 @@ class IPythonKernel(object):
             # ipython's and IDA's excepthook (IDA's excepthook is actually Python's
             # default).
             sys.excepthook = wrap_excepthook(sys.excepthook)
+
+            # Restore the displayhook to IDAPython's. For some reason this won't
+            # affect sys.displayhook in IPython's scope so we basically end up
+            # with the IPython's displayhook in IPyIDA's window, and IDAPython's
+            # in IDA's default console. Fingers crossed there's no side effects.
+            sys.displayhook = _ida_displayhook
 
         app.shell.set_completer_frame()
 
