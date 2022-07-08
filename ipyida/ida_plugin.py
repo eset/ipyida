@@ -62,6 +62,9 @@ if idaapi.is_idaq():
 
     _kernel = kernel.IPythonKernel()
     _kernel.start()
+else:
+    # Required for the plugin init
+    _kernel = None
 
 def _do_load():
     ipyida_plugin_path = __file__
