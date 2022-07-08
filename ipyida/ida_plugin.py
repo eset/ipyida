@@ -55,11 +55,13 @@ def _setup_asyncio_event_loop():
         loop = qasync.QEventLoop(qapp, already_running=True)
         asyncio.set_event_loop(loop)
 
-if ida_qtconsole.is_using_pyqt5() and kernel.is_using_ipykernel_5():
-    _setup_asyncio_event_loop()
+# Only load the plugin when we have a GUI
+if idaapi.is_idaq():
+    if ida_qtconsole.is_using_pyqt5() and kernel.is_using_ipykernel_5():
+        _setup_asyncio_event_loop()
 
-_kernel = kernel.IPythonKernel()
-_kernel.start()
+    _kernel = kernel.IPythonKernel()
+    _kernel.start()
 
 def _do_load():
     ipyida_plugin_path = __file__
