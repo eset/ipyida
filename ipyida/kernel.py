@@ -118,7 +118,9 @@ class IPythonKernel(object):
             main = app.kernel.shell._orig_sys_modules_main_mod
             if main is not None:
                 sys.modules[app.kernel.shell._orig_sys_modules_main_name] = main
-        
+
+            app.kernel.shell.display_formatter.formatters["text/plain"].for_type(int, self.print_int)
+
             # IPython <= 3.2.x will send exception to sys.__stderr__ instead of
             # sys.stderr. IDA's console will not be able to display exceptions if we
             # don't send it to IDA's sys.stderr. To fix this, we call both the
@@ -146,7 +148,9 @@ class IPythonKernel(object):
                 return int(1000 * app.kernel._poll_interval)
             self._timer = idaapi.register_timer(int(1000 * app.kernel._poll_interval), ipython_kernel_iteration)
 
-
+    @staticmethod
+    def print_int(obj, printer, *args):
+        printer.text(hex(obj))
 
     def stop(self):
         if self._timer is not None:
