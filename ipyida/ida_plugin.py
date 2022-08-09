@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QApplication
 class IPyIDAPlugIn(idaapi.plugin_t):
     wanted_name = "IPyIDA"
     wanted_hotkey = "Shift-."
-    flags = 0
+    flags = idaapi.PLUGIN_FIX
     comment = ""
     help = "Starts an IPython qtconsole in IDA Pro"
     
