@@ -91,8 +91,9 @@ class IPythonKernel(object):
         self.connection_file = None
     
     def start(self):
-        if self._timer is not None:
-            raise Exception("IPython kernel is already running.")
+        if self.started:
+            sys.stderr.write("Tried to start IPython kernel but already running.\n")
+            return
 
         # The IPKernelApp initialization is based on the IPython source for
         # IPython.embed_kernel available here:
@@ -162,7 +163,7 @@ class IPythonKernel(object):
 
     @property
     def started(self):
-        return self._timer is not None
+        return self.connection_file is not None
 
 def do_one_iteration():
     """Perform an iteration on IPython kernel runloop"""
