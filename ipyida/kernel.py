@@ -121,6 +121,8 @@ class IPythonKernel(object):
                 sys.modules[app.kernel.shell._orig_sys_modules_main_name] = main
 
             app.kernel.shell.display_formatter.formatters["text/plain"].for_type(int, self.print_int)
+            if sys.version_info.major >= 3:
+                app.kernel.shell.display_formatter.formatters["text/plain"].for_type(bytes, self.print_bytes)
 
             # IPython <= 3.2.x will send exception to sys.__stderr__ instead of
             # sys.stderr. IDA's console will not be able to display exceptions if we
@@ -152,6 +154,24 @@ class IPythonKernel(object):
     @staticmethod
     def print_int(obj, printer, *args):
         printer.text(hex(obj))
+
+    @staticmethod
+    def print_bytes(obj, printer, *args):
+        if all(b >= 0x20 and b < 0x80 for b in obj):
+            printer.text(repr(obj))
+        else:
+            def to_single_char(b):
+                if   b <  0x20: return " "
+                elif b >= 0x80: return "."
+                else: return chr(b)
+            for i in range(0, len(obj), 16):
+                block = obj[i:i+16]
+                printer.text("{:08X}: {:23s}  {:23s} |{:16s}|\n".format(
+                    i,
+                    " ".join("{:02X}".format(b) for b in block[:8]),
+                    " ".join("{:02X}".format(b) for b in block[8:]),
+                    "".join(to_single_char(b) for b in block)
+                ))
 
     def stop(self):
         if self._timer is not None:
