@@ -18,15 +18,13 @@ class IPyIDAPlugIn(idaapi.plugin_t):
     help = "Starts an IPython qtconsole in IDA Pro"
     
     def init(self):
-        global _kernel
-        self.kernel = _kernel
+        self.kernel = kernel.IPythonKernel()
+        self.kernel.start()
         self.widget = None
         monkey_patch_IDAPython_ExecScript()
         return idaapi.PLUGIN_KEEP
 
     def run(self, args):
-        if not self.kernel.started:
-            self.kernel.start()
         if self.widget is None:
             self.widget = ida_qtconsole.IPythonConsole(self.kernel.connection_file)
         self.widget.Show()
@@ -57,9 +55,6 @@ def _setup_asyncio_event_loop():
 
 if QApplication.instance() and ida_qtconsole.is_using_pyqt5() and kernel.is_using_ipykernel_5():
     _setup_asyncio_event_loop()
-
-_kernel = kernel.IPythonKernel()
-_kernel.start()
 
 def _do_load():
     ipyida_plugin_path = __file__
