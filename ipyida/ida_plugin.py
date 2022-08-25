@@ -56,36 +56,6 @@ def _setup_asyncio_event_loop():
 if QApplication.instance() and ida_qtconsole.is_using_pyqt5() and kernel.is_using_ipykernel_5():
     _setup_asyncio_event_loop()
 
-def _do_load():
-    ipyida_plugin_path = __file__
-    if ipyida_plugin_path.endswith("pyc"):
-        # IDA Python can't load pyc, only the Python source so we remove the "c"
-        ipyida_plugin_path = ipyida_plugin_path[:-1]
-    idaapi.load_plugin(ipyida_plugin_path)
-
-def load():
-    """
-    Perform necessary steps to load the plugin inside IDA. If no IDB is open, it
-    will wait until it is open to load it.
-    """
-    if idaapi.get_root_filename() is None:
-        # No idb open yet
-        def handler(event, old=0):
-            if event == idaapi.NW_OPENIDB:
-                _do_load()
-            elif event == idaapi.NW_TERMIDA:
-                idaapi.notify_when(idaapi.NW_TERMIDA | idaapi.NW_OPENIDB | idaapi.NW_REMOVE, handler)
-        def _install():
-            idaapi.notify_when(idaapi.NW_TERMIDA | idaapi.NW_OPENIDB, handler)
-            # return -1 to remove the timer
-            return -1
-        # It's possible we can't use the notify_when API call yet when IDA opens
-        # so try register a timer to add the event listner in the proper "state"
-        idaapi.register_timer(1, _install)
-    else:
-        # IDA is fully loaded and an idb is open, just load the plugin.
-        _do_load()
-
 def monkey_patch_IDAPython_ExecScript():
     """
     This funtion wraps IDAPython_ExecScript to avoid having an empty string has
