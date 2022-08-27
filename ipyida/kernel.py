@@ -153,7 +153,10 @@ class IPythonKernel(object):
 
     @staticmethod
     def print_int(obj, printer, *args):
-        printer.text(hex(obj))
+        if obj > 9 or obj < -9:
+            printer.text(hex(obj))
+        else:
+            printer.text(str(obj))
 
     @staticmethod
     def print_bytes(obj, printer, *args):
