@@ -10,11 +10,13 @@
 
 from ipykernel.kernelapp import IPKernelApp
 import IPython.utils.frame
+from IPython.core.magic import register_line_magic
 import ipykernel.iostream
 
 import sys
 import os
 import logging
+import json
 import idaapi
 
 # The IPython kernel will override sys.std{out,err}. We keep a copy to let the
@@ -89,6 +91,7 @@ class IPythonKernel(object):
     def __init__(self):
         self._timer = None
         self.connection_file = None
+        self.notebook_mgr = None
     
     def start(self):
         if self.started:
@@ -123,6 +126,10 @@ class IPythonKernel(object):
             app.kernel.shell.display_formatter.formatters["text/plain"].for_type(int, self.print_int)
             if sys.version_info.major >= 3:
                 app.kernel.shell.display_formatter.formatters["text/plain"].for_type(bytes, self.print_bytes)
+                from .notebook import NotebookManager
+                self.notebook_mgr = NotebookManager(app.connection_file)
+                for func in self.notebook_mgr.magic_functions:
+                    app.kernel.shell.register_magic_function(func)
 
             # IPython <= 3.2.x will send exception to sys.__stderr__ instead of
             # sys.stderr. IDA's console will not be able to display exceptions if we
@@ -188,6 +195,9 @@ class IPythonKernel(object):
     def stop(self):
         if self._timer is not None:
             idaapi.unregister_timer(self._timer)
+        if self.notebook_mgr is not None:
+            self.notebook_mgr.shutdown()
+            self.notebook_mgr = None
         self._timer = None
         self.connection_file = None
         sys.stdout = _ida_stdout

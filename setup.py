@@ -34,7 +34,14 @@ setup(name='ipyida',
           'qtconsole>=4.3',
           'qasync; python_version >= "3"',
           'jupyter-client<6.1.13',
+          'nbformat',
       ],
+      extras_require={
+          "notebook": [
+              "notebook<7",
+              "jupyter-kernel-proxy",
+          ]
+      },
       license="BSD",
       classifiers=[
           "Development Status :: 5 - Production/Stable",
