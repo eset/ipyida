@@ -166,13 +166,16 @@ class IPythonKernel(object):
             printer.text(str(obj))
         info_struct = idaapi.get_inf_structure()
         if obj >= info_struct.min_ea and obj < info_struct.max_ea:
-            addr = idaapi.prev_that(obj, info_struct.min_ea, idaapi.has_name)
+            addr = idaapi.prev_that(obj+1, info_struct.min_ea, idaapi.has_name)
             if addr != idaapi.BADADDR:
                 name = idaapi.get_name(addr)
                 demangled = idaapi.demangle_name(name, 0)
                 if demangled and len(demangled) > 0:
                     name = demangled
-                printer.text(" ({:s} + {:x})".format(name, obj - addr))
+                printer.text(" ({:s}".format(name))
+                if obj - addr != 0:
+                    printer.text(" + 0x{:x}".format(obj - addr))
+                printer.text(")")
 
     @staticmethod
     def print_bytes(obj, printer, *args):
