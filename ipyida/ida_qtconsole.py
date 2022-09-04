@@ -17,9 +17,9 @@ def is_using_pyqt5():
         return False
 
 if is_using_pyqt5():
-    from PyQt5 import QtGui, QtWidgets
+    from PyQt5 import QtGui, QtWidgets, QtCore
 else:
-    from PySide import QtGui
+    from PySide import QtGui, QtCore
 
 import sys
 import os
@@ -60,6 +60,10 @@ import ipyida.kernel
 
 class IdaRichJupyterWidget(RichJupyterWidget):
     def _is_complete(self, source, interactive):
+        if ipyida.kernel.is_using_ipykernel_5():
+            # The kernel is running on the QT runloop so no need to call
+            # `do_one_iteration`
+            return super(IdaRichJupyterWidget, self)._is_complete(source, interactive)
         # The original implementation in qtconsole is synchronous. IDA Python is
         # single threaded and the IPython kernel runs on the same thread as the
         # UI so the is_complete request can never be processed by the kernel,
@@ -97,6 +101,36 @@ class IdaRichJupyterWidget(RichJupyterWidget):
                 status = reply['content'].get('status', u'complete')
                 indent = reply['content'].get('indent', u'')
                 return status != 'incomplete', indent
+
+    def _action_on_click(self, string):
+        import re
+        try:
+            addr = int(string, 16)
+        except ValueError:
+            addr = idaapi.get_name_ea(idaapi.get_inf_structure().min_ea, string)
+        if addr >= idaapi.get_inf_structure().min_ea and \
+           addr <  idaapi.get_inf_structure().max_ea:
+            return lambda: idaapi.jumpto(addr)
+        else:
+            return None
+
+    def eventFilter(self, obj, event):
+        if event.type() in (QtCore.QEvent.MouseMove, QtCore.QEvent.MouseButtonPress):
+            if event.modifiers() & QtCore.Qt.ControlModifier:
+                cursor = self._control.cursorForPosition(event.pos())
+                # Note: the cursor is a copy, so selection wont' affect the
+                # visible QTextEdit
+                cursor.select(QtGui.QTextCursor.WordUnderCursor)
+                action = self._action_on_click(cursor.selectedText())
+                if action:
+                    self._control.viewport().setCursor(QtCore.Qt.PointingHandCursor)
+                    if event.button() == QtCore.Qt.LeftButton:
+                        action()
+                else:
+                    self._control.viewport().setCursor(QtCore.Qt.IBeamCursor)
+            else:
+                self._control.viewport().setCursor(QtCore.Qt.IBeamCursor)
+        return super(IdaRichJupyterWidget, self).eventFilter(obj, event)
 
 _user_widget_options = {}
 
@@ -152,10 +186,7 @@ class IPythonConsole(idaapi.PluginForm):
             # See: https://github.com/eset/ipyida/issues/8
             widget_options["gui_completion"] = 'droplist'
         widget_options.update(_user_widget_options)
-        if ipyida.kernel.is_using_ipykernel_5():
-            self.ipython_widget = RichJupyterWidget(self.parent, **widget_options)
-        else:
-            self.ipython_widget = IdaRichJupyterWidget(self.parent, **widget_options)
+        self.ipython_widget = IdaRichJupyterWidget(self.parent, **widget_options)
         self.ipython_widget.kernel_manager = self.kernel_manager
         self.ipython_widget.kernel_client = self.kernel_client
         layout.addWidget(self.ipython_widget)
