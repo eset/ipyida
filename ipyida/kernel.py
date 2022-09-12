@@ -203,8 +203,6 @@ class IPythonKernel(object):
             self.notebook_mgr = None
         self._timer = None
         self.connection_file = None
-        sys.stdout = _ida_stdout
-        sys.stderr = _ida_stderr
 
     @property
     def started(self):
