@@ -126,7 +126,7 @@ class NotebookManager(object):
             self.nb_proc = subprocess.Popen([
                 get_python_executable_path(),
                 "-m", "jupyter", "notebook", "--no-browser", "-y"
-            ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             try_count = 0
             while nb_server_info is None and try_count < 10:
                 time.sleep(0.5)
@@ -169,7 +169,7 @@ class NotebookManager(object):
         if self.nb_proc:
             with self.nb_pipe_lock:
                 for s in self.nb_pipe_buffer:
-                    print(s)
+                    print(s, end="")
                 self.nb_pipe_buffer = []
         else:
             print("Notebook isn't running or managed by this IPyIDA instance")
