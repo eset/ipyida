@@ -83,20 +83,41 @@ class NotebookManager(object):
         is_idb_under_nb_dir = lambda c: idb_path.startswith(c.get("notebook_dir"))
         return next(filter(is_idb_under_nb_dir, list_running_servers()), None)
 
+    def _parse_args(self, line):
+        args = line.split()
+        parsed = dict()
+        if "--skip-dependency-checks" in args:
+            parsed["skip_dependency_checks"] = True
+            args.remove("--skip-dependency-checks")
+        if len(args) > 0:
+            parsed["filename"] = args[0]
+        return parsed
+
     def open_notebook(self, line):
         """
         Open a Jupyter Notebook in the same directory where the currently open
-        .idb (or .i64) is located. The notebook file (.ipynb) will have the
-        same name as the IDA database file.
+        .idb (or .i64) is located. Unless specified, the notebook file (.ipynb)
+        will have the same name as the IDA database file.
+
+        The following arguments can be used:
+
+            --skip-dependency-checks    Assumes Notebook and jupyter-kernel-proxy
+                                        are already installed
+            <filename>                  Filename of the notebook to open.
+                                        (.ipynb may be omitted)
         """
+
         idb_path = idaapi.get_path(idaapi.PATH_TYPE_IDB)
         if len(idb_path) == 0:
             raise Exception("No file currently open")
 
-        if not self.ensure_notebook_installed() or \
-           not self.ensure_kernel_proxy_installed() or \
-           not self.ensure_kernelspec_installed():
-            raise Exception("Could not find or install all requirements")
+        args = self._parse_args(line)
+
+        if not args.get("skip_dependency_checks", False):
+            if not self.ensure_notebook_installed() or \
+               not self.ensure_kernel_proxy_installed() or \
+               not self.ensure_kernelspec_installed():
+                raise Exception("Could not find or install all requirements")
 
         nb_server_info = self._get_running_notebook_config()
 
@@ -117,7 +138,9 @@ class NotebookManager(object):
                 self.nb_pipe_thread = threading.Thread(target=self._notebook_stdout_thread)
                 self.nb_pipe_thread.start()
 
-        ipynb_filename = os.path.basename(idb_path).rsplit(".", 1)[0] + ".ipynb"
+        ipynb_filename = args.get("filename", os.path.basename(idb_path).rsplit(".", 1)[0])
+        if not ipynb_filename.endswith(".ipynb"):
+            ipynb_filename += ".ipynb"
         ipynb_path = os.path.join(os.path.dirname(idb_path), ipynb_filename)
         if not os.path.exists(ipynb_path):
             # Create the file, the notebook won't do it for us
