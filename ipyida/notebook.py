@@ -148,13 +148,15 @@ class NotebookManager(object):
                 nb = nbformat.versions[nbformat.current_nbformat].new_notebook()
                 json.dump(nb, f)
         relative_path = os.path.relpath(ipynb_path, nb_server_info.get("notebook_dir"))
-        url = nb_server_info.get("url") + "notebooks/" + "/".join(relative_path.split(os.path.sep)) + '?kernel_type=proxy&token=' + nb_server_info.get("token")
+        url = nb_server_info.get("url") + \
+            "notebooks/" + "/".join(relative_path.split(os.path.sep)) + \
+            '?kernel_type=proxy&token=' + nb_server_info.get("token")
         # Update access time of the file so it's picked up by the proxy.
         # jupyter-kernel-proxy will use the file with the most recent access
         # time (like `jupyter console --existing`)
         with open(find_connection_file(self.connection_file), "r"): pass
         webbrowser.open(url)
-        print("Opening " + url)
+        return url
 
     def _notebook_stdout_thread(self):
         while self.nb_proc.poll() is None:
