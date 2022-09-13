@@ -150,7 +150,7 @@ class NotebookManager(object):
         relative_path = os.path.relpath(ipynb_path, nb_server_info.get("notebook_dir"))
         url = nb_server_info.get("url") + \
             "notebooks/" + "/".join(relative_path.split(os.path.sep)) + \
-            '?kernel_type=proxy&token=' + nb_server_info.get("token")
+            '?kernel_name=proxy&token=' + nb_server_info.get("token")
         # Update access time of the file so it's picked up by the proxy.
         # jupyter-kernel-proxy will use the file with the most recent access
         # time (like `jupyter console --existing`)
