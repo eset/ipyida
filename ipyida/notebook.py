@@ -21,15 +21,20 @@ import nbformat
 from jupyter_client.kernelspec import find_kernel_specs
 from jupyter_client import find_connection_file
 
-def get_python_executable_path():
+def _popen_python_module(module, *args, **kwargs):
     # We can't rely on sys.executable because it's set to ida{q,t}{.exe,} in IDA
     if sys.platform == 'win32':
-        return os.path.join(sys.prefix, 'Python.exe')
+        python = os.path.join(sys.prefix, 'Python.exe')
+        si_hidden_window = subprocess.STARTUPINFO()
+        si_hidden_window.dwFlags = subprocess.STARTF_USESHOWWINDOW
+        si_hidden_window.wShowWindow = subprocess.SW_HIDE
+        kwargs["startupinfo"] = si_hidden_window
     else:
         python = os.path.join(sys.prefix, 'bin', 'python')
         if sys.version_info.major >= 3:
             python += str(sys.version_info.major)
-        return python
+    return subprocess.Popen([ python, "-m", module ] + list(args), **kwargs)
+
 
 class NotebookManager(object):
 
@@ -46,10 +51,9 @@ class NotebookManager(object):
             import jupyter_kernel_proxy
         except ImportError:
             print("-> Installing jupyter-kernel-proxy...")
-            return subprocess.Popen([
-                get_python_executable_path(),
-                "-m", "pip", "install", "jupyter-kernel-proxy"
-            ]).wait() == 0
+            return _popen_python_module(
+                "pip", "install", "jupyter-kernel-proxy"
+            ).wait() == 0
         else:
             return True
 
@@ -57,10 +61,9 @@ class NotebookManager(object):
     def ensure_kernelspec_installed():
         if "proxy" not in find_kernel_specs():
             print("-> Installing jupyter-kernel-proxy kernelspec...")
-            return subprocess.Popen([
-                get_python_executable_path(),
-                "-m", "jupyter_kernel_proxy", "install"
-            ]).wait() == 0
+            return _popen_python_module(
+                "jupyter_kernel_proxy", "install"
+            ).wait() == 0
         else:
             return True
 
@@ -70,10 +73,9 @@ class NotebookManager(object):
             import notebook
         except ImportError:
             print("-> Installing jupyter-notebook...")
-            return subprocess.Popen([
-                get_python_executable_path(),
-                "-m", "pip", "install", "notebook<7"
-            ]).wait() == 0
+            return _popen_python_module(
+                "pip", "install", "notebook<7"
+            ).wait() == 0
         else:
             return True
 
@@ -123,10 +125,11 @@ class NotebookManager(object):
 
         if nb_server_info is None:
             print("-> Starting notebook")
-            self.nb_proc = subprocess.Popen([
-                get_python_executable_path(),
-                "-m", "jupyter", "notebook", "--no-browser", "-y"
-            ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            self.nb_proc = _popen_python_module(
+                "jupyter", "notebook", "--no-browser", "-y",
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True
+            )
             try_count = 0
             while nb_server_info is None and try_count < 10:
                 time.sleep(0.5)

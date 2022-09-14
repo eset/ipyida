@@ -35,6 +35,13 @@ if not hasattr(sys, 'real_executable'):
             # Ready for Python 4?
             sys.executable += str(sys.version_info.major)
 
+if sys.platform == 'win32':
+    si_hidden_window = subprocess.STARTUPINFO()
+    si_hidden_window.dwFlags = subprocess.STARTF_USESHOWWINDOW
+    si_hidden_window.wShowWindow = subprocess.SW_HIDE
+else:
+    si_hidden_window = None
+
 # IDA Python sets sys.stdout to a file-like object IDAPythonStdOut. It doesn't
 # have things like fileno, close, etc. This helper uses a file and redirect the
 # content back to IDA's stdout.
@@ -71,7 +78,8 @@ except ImportError:
             sys.executable,
             stdin=subprocess.PIPE,
             stdout=sys.stdout,
-            stderr=sys.stdout
+            stderr=sys.stdout,
+            startupinfo=si_hidden_window
         )
         p.communicate(get_pip)
     try:
@@ -87,7 +95,8 @@ def pip_install(package, extra_args=[]):
             pip_install_cmd + extra_args + [ package ],
             stdin=subprocess.PIPE,
             stdout=sys.stdout,
-            stderr=sys.stdout
+            stderr=sys.stdout,
+            startupinfo=si_hidden_window
         )
         ret = p.wait()
     return ret

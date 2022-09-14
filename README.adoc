@@ -50,9 +50,6 @@ The script will do the following:
 You can inspect the link:install_from_ida.py[] script if you wish to see
 exactly what it does.
 
-WARNING: Don't panic. It's normal to see Windows' command prompt window open
-         during the installation on Windows.
-
 ==== Upgrading
 
 Rerun the install script to update to the latest version and restart IDA.
