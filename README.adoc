@@ -64,6 +64,13 @@ This method requires that you manage dependencies on your own. IPyIDA requires
 the `ipykernel` and `qtconsole` package, and the `qasync` package if using
 `ipykernel` version 5 or newer.
 
+== Jupyter Notebook integration
+
+IPyIDA includes a magic command, `%open_notebook`, to open a browser with a
+notebook attached to IPyIDA. The command takes care of installing dependencies
+on its first run and starting a Notebook server unless one is already running.
+Check the command help (by typing `%open_notebook?`) for further options.
+
 == Customizing the IPython console
 
 By default, the console does not have any globals available. If you want to
@@ -90,15 +97,6 @@ ipyida.ida_qtconsole.set_widget_options(dict(
 ----
 
 == Caveats
-
-=== Notebook not working
-
-IPython notebook cannot attach to an existing kernel like `ipython console` and
-`ipython qtconsole` do. There's some more background info here:
-https://github.com/ipython/ipython/issues/4066.
-
-There are workarounds to this be I didn't include one yet. I will consider
-adding it if it's not too hackish. Pull requests are welcome.
 
 === External console not responding if IDA's window is in the background for too long
 
