@@ -1,0 +1,38 @@
+= Setting up a virtual environment for IDA Python
+
+The Python interpreter running in IDA Pro can use its own virtual environment.
+This is an isolation which allows Python packages to be installed for IDA
+Python independently from system packages.
+
+To create a virtual environment for IDA Python, install
+https://pypi.org/project/virtualenv/[virtualenv], then create a new
+empty environment using
+`python -m virtualenv <path-to-new-virtualenv>`.
+Make sure that the command is launched using the same Python interpreter
+used by IDA Pro, as selected by `idapyswitch`. When started, IDA Python
+loads the `<ida-user-dir>/idapythonrc.py` file. We'll add
+the following line to this file to load the environment, assuming a
+virtual environment was created in `<ida-user-dir>/pythonenv`.
+
+[source,python]
+----
+import os
+import idaapi
+
+# Path to the previously created virtualenv.
+VIRTUALENV_PATH = os.path.join(idaapi.get_user_idadir(), "python_env")
+VIRTUALENV_ACTIVATE_PATH = os.path.join(VIRTUALENV_PATH, "bin", "activate_this.py")
+
+# Activate the virtualenv
+with open(VIRTUAL_ENV_ACTIVATE_PATH) as venv_activator_file:
+    exec(venv_activator_file.read(), dict(__file__=VIRTUAL_ENV_ACTIVATE_PATH))
+
+del VIRTUAL_ENV_ACTIVATE_PATH
+----
+
+IPyIDA supports installation and usage inside a virtual environment.
+
+Note that since version 3.3, Python ships with
+https://docs.python.org/3/library/venv.html[venv], a minimalistic
+version of `virtualenv`. `venv` does not create a Python activator (the
+`activate_this.py` file) so it can't easily be used by IDA Python.
