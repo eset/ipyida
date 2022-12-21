@@ -24,7 +24,11 @@ from jupyter_client import find_connection_file
 def _popen_python_module(module, *args, **kwargs):
     # We can't rely on sys.executable because it's set to ida{q,t}{.exe,} in IDA
     if sys.platform == 'win32':
-        python = os.path.join(sys.prefix, 'Python.exe')
+        # Try in Scripts first. If a virtualenv is activated, Python.exe will
+        # be there
+        python = os.path.join(sys.prefix, 'Scripts', 'Python.exe')
+        if not os.path.exists(python):
+            python = os.path.join(sys.prefix, 'Python.exe')
         si_hidden_window = subprocess.STARTUPINFO()
         si_hidden_window.dwFlags = subprocess.STARTF_USESHOWWINDOW
         si_hidden_window.wShowWindow = subprocess.SW_HIDE

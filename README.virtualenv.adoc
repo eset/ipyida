@@ -19,15 +19,18 @@ virtual environment was created in `<ida-user-dir>/pythonenv`.
 import os
 import idaapi
 
-# Path to the previously created virtualenv.
-VIRTUALENV_PATH = os.path.join(idaapi.get_user_idadir(), "python_env")
-VIRTUALENV_ACTIVATE_PATH = os.path.join(VIRTUALENV_PATH, "bin", "activate_this.py")
+def activate_virtualenv(virtualenv_path):
+    for bindir in ("Scripts", "bin"):
+        activate_this_path = os.path.join(virtualenv_path, bindir, "activate_this.py")
+        if os.path.exists(activate_this_path):
+            break
+    else:
+        raise ValueError('Could not find "activate_this.py" in ' + virtualenv_path)
 
-# Activate the virtualenv
-with open(VIRTUAL_ENV_ACTIVATE_PATH) as venv_activator_file:
-    exec(venv_activator_file.read(), dict(__file__=VIRTUAL_ENV_ACTIVATE_PATH))
+    with open(activate_this_path) as f:
+        exec(f.read(), dict(__file__=activate_this_path))
 
-del VIRTUAL_ENV_ACTIVATE_PATH
+activate_virtualenv(os.path.join(idaapi.get_user_idadir(), "python_env"))
 ----
 
 IPyIDA supports installation and usage inside a virtual environment.

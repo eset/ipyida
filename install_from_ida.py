@@ -28,7 +28,11 @@ if not "IPYIDA_PACKAGE_LOCATION" in dir():
 if not hasattr(sys, 'real_executable'):
     sys.real_executable = sys.executable
     if sys.platform == 'win32':
-        sys.executable = os.path.join(sys.prefix, 'Python.exe')
+        exe_path_venv = os.path.join(sys.prefix, 'Scripts', 'Python.exe')
+        if os.path.exists(exe_path_venv):
+            sys.executable = exe_path_venv
+        else:
+            sys.executable = os.path.join(sys.prefix, 'Python.exe')
     else:
         sys.executable = os.path.join(sys.prefix, 'bin', 'python')
         if sys.version_info.major >= 3:
