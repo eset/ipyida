@@ -135,11 +135,13 @@ class NotebookManager(object):
                 text=True
             )
             try_count = 0
-            while nb_server_info is None and try_count < 10:
+            while nb_server_info is None and self.nb_proc.poll() is None and try_count < 10:
                 time.sleep(0.5)
                 nb_server_info = self._get_running_notebook_config()
+                try_count += 1
             if nb_server_info is None:
                 self.nb_proc.terminate()
+                print(self.nb_proc.stdout.read())
                 raise Exception("Couldn't start Jupyter Notebook")
             else:
                 self.nb_pipe_thread = threading.Thread(target=self._notebook_stdout_thread)
