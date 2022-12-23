@@ -134,8 +134,7 @@ class NotebookManager(object):
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 text=True
             )
-            try_count = 0
-            while nb_server_info is None and try_count < 10:
+            for _ in range(10):
                 time.sleep(0.5)
                 nb_server_info = self._get_running_notebook_config()
             if nb_server_info is None:
