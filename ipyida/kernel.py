@@ -133,7 +133,9 @@ class IPythonKernel(object):
                 # IDAPythonStdOut instance
                 log=logging.getLogger("ipyida_kernel")
             )
+            main_module = sys.modules['__main__']
             app.initialize()
+            app.kernel.user_module=main_module
 
             main = app.kernel.shell._orig_sys_modules_main_mod
             if main is not None:
