@@ -136,7 +136,7 @@ class IPythonKernel(object):
             main_module = sys.modules['__main__']
             app.initialize()
             app.kernel.user_module=main_module
-
+            app.kernel.user_ns=main_module.__dict__
             main = app.kernel.shell._orig_sys_modules_main_mod
             if main is not None:
                 sys.modules[app.kernel.shell._orig_sys_modules_main_name] = main
