@@ -107,9 +107,9 @@ class IdaRichJupyterWidget(RichJupyterWidget):
         try:
             addr = int(string, 16)
         except ValueError:
-            addr = idaapi.get_name_ea(idaapi.get_inf_structure().min_ea, string)
-        if addr >= idaapi.get_inf_structure().min_ea and \
-           addr <  idaapi.get_inf_structure().max_ea:
+            addr = idaapi.get_name_ea(idaapi.inf_get_min_ea(), string)
+        if addr >= idaapi.inf_get_min_ea() and \
+           addr <  idaapi.inf_get_max_ea():
             return lambda: idaapi.jumpto(addr)
         else:
             return None

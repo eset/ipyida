@@ -164,9 +164,10 @@ class IPythonKernel(object):
             printer.text(hex(obj))
         else:
             printer.text(str(obj))
-        info_struct = idaapi.get_inf_structure()
-        if obj >= info_struct.min_ea and obj < info_struct.max_ea:
-            addr = idaapi.prev_that(obj+1, info_struct.min_ea, idaapi.has_name)
+        min_ea = idaapi.inf_get_max_ea()
+        max_ea = idaapi.inf_get_max_ea()
+        if obj >= min_ea and obj < max_ea:
+            addr = idaapi.prev_that(obj+1, min_ea, idaapi.has_name)
             if addr != idaapi.BADADDR:
                 name = idaapi.get_name(addr)
                 demangled = idaapi.demangle_name(name, 0)
