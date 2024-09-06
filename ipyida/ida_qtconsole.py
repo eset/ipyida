@@ -104,12 +104,12 @@ class IdaRichJupyterWidget(RichJupyterWidget):
 
     def _action_on_click(self, string):
         import re
+        min_ea, max_ea = ipyida.kernel.get_ea_bounds()
         try:
             addr = int(string, 16)
         except ValueError:
-            addr = idaapi.get_name_ea(idaapi.inf_get_min_ea(), string)
-        if addr >= idaapi.inf_get_min_ea() and \
-           addr <  idaapi.inf_get_max_ea():
+            addr = idaapi.get_name_ea(min_ea, string)
+        if addr >= min_ea and addr < max_ea:
             return lambda: idaapi.jumpto(addr)
         else:
             return None

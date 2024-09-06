@@ -47,6 +47,22 @@ def is_using_ipykernel_5():
     import ipykernel
     return hasattr(ipykernel.kernelbase.Kernel, "process_one")
 
+def get_ea_bounds():
+    """
+    Wraps getting the min and max ea to use either inf_get_min_ea
+    (IDA >= 7.?) or get_inf_structure (IDA < 7.?)
+
+    Returns: a tuple (min_ea, max_ea)
+    """
+    if hasattr(idaapi, "inf_get_min_ea"):
+        return (
+            idaapi.inf_get_min_ea(),
+            idaapi.inf_get_max_ea()
+        )
+    else:
+        inf = idaapi.get_inf_structure()
+        return ( inf.min_ea, inf.max_ea )
+
 
 class IDATeeOutStream(ipykernel.iostream.OutStream):
 
@@ -164,8 +180,7 @@ class IPythonKernel(object):
             printer.text(hex(obj))
         else:
             printer.text(str(obj))
-        min_ea = idaapi.inf_get_max_ea()
-        max_ea = idaapi.inf_get_max_ea()
+        min_ea, max_ea = get_ea_bounds()
         if obj >= min_ea and obj < max_ea:
             addr = idaapi.prev_that(obj+1, min_ea, idaapi.has_name)
             if addr != idaapi.BADADDR:
