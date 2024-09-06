@@ -12,8 +12,8 @@ image::ipyida-screenshot.png[IPyIDA screenshot,width=100%]
 
 == Install
 
-IPyIDA has been tested with IDA 6.6 and up on Windows, OS X and Linux, up to
-7.6.
+IPyIDA should be compatible with IDA 6.6 and later on Windows, OS X and Linux.
+It has been tested on IDA up to 9.0.
 
 === Fast and easy install
 
