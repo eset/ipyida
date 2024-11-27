@@ -60,8 +60,7 @@ def get_ea_bounds():
             idaapi.inf_get_max_ea()
         )
     else:
-        inf = idaapi.get_inf_structure()
-        return ( inf.min_ea, inf.max_ea )
+        return return ( ida_ida.inf_get_min_ea(), ida_ida.inf_get_max_ea() )
 
 
 class IDATeeOutStream(ipykernel.iostream.OutStream):
