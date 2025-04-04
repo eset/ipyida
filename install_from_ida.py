@@ -13,7 +13,6 @@ from contextlib import contextmanager
 import tempfile
 import subprocess
 import fileinput
-import pkg_resources
 import shutil
 
 if not "IPYIDA_PACKAGE_LOCATION" in dir():
@@ -131,7 +130,7 @@ if os.path.exists(ida_python_rc_path):
 if "# BEGIN IPyIDA loading" in rc_file_content:
     print("[.] Old IPyIDA loading script present in idapythonrc.py. Removing.")
     in_ipyida_block = False
-    for line in fileinput.input(ida_python_rc_path, inplace=1, backup='.ipyida_old'):
+    for line in fileinput.input(ida_python_rc_path, inplace=True, backup='.ipyida_old'):
         if line.startswith("# BEGIN IPyIDA loading code"):
             in_ipyida_block = True
         elif line.startswith("# END IPyIDA loading code"):
@@ -149,17 +148,25 @@ if not os.path.exists(os.path.dirname(ipyida_stub_target_path)):
 if 'ipyida' in sys.modules:
     del sys.modules['ipyida']
 
-shutil.copyfile(
-    pkg_resources.resource_filename("ipyida", "ipyida_plugin_stub.py"),
-    ipyida_stub_target_path
-)
+try:
+    # Python >= 3.7
+    import importlib.resources
+    with importlib.resources.path("ipyida", "ipyida_plugin_stub.py") as stub_path:
+        shutil.copyfile(stub_path, ipyida_stub_target_path)
+except ImportError:
+    # Python < 3.7
+    import pkg_resources
+    shutil.copyfile(
+        pkg_resources.resource_filename("ipyida", "ipyida_plugin_stub.py"),
+        ipyida_stub_target_path
+    )
 print("[+] ipyida.py added to user plugins")
 
 idaapi.load_plugin(ipyida_stub_target_path)
 
-_ida_version = pkg_resources.parse_version(idaapi.get_kernel_version())
+_ida_version = tuple(idaapi.get_kernel_version().split("."))
 
-if os.name == 'nt' and _ida_version < pkg_resources.parse_version("7.4"):
+if os.name == 'nt' and _ida_version < ("7", "4"):
     # No party for Windows with old IDA
     print("[+] IPyIDA Installation successful. Use <Shift+.> to open the console.")
 else:
