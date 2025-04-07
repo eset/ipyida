@@ -12,7 +12,7 @@ Make sure that the command is launched using the same Python interpreter
 used by IDA Pro, as selected by `idapyswitch`. When started, IDA Python
 loads the `<ida-user-dir>/idapythonrc.py` file. We'll add
 the following lines to this file to load the environment, assuming a
-virtual environment was created in `<ida-user-dir>/pythonenv`.
+virtual environment was created in `<ida-user-dir>/python_env`.
 
 [source,python]
 ----
