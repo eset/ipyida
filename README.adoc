@@ -96,6 +96,17 @@ ipyida.ida_qtconsole.set_widget_options(dict(
 ))
 ----
 
+== IDE Integration
+
+One of the noteworthy features of iPyIDA is the ability to integrate it with
+the PyCharm IDE. This allows features such as stepping through code,
+syntax highlighting, Github CoPilot integration, etc. To make use of this
+feature, simply launch IDA and open a database, create a Jupyter Notebook
+in PyCharm, add some code, and click run. IPyIDA does all the magic in the
+background.
+
+image::pycharm-screenshot.png[IPyIDA screenshot,width=100%]
+
 == Caveats
 
 === External console not responding if IDA's window is in the background for too long
