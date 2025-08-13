@@ -53,7 +53,7 @@ def _setup_asyncio_event_loop():
         loop = qasync.QEventLoop(qapp, already_running=True)
         asyncio.set_event_loop(loop)
 
-if QApplication.instance() and ida_qtconsole.is_using_pyqt5() and kernel.is_using_ipykernel_5():
+if QApplication.instance() and ida_qtconsole.get_qt_version() >= 5 and kernel.is_using_ipykernel_5():
     _setup_asyncio_event_loop()
 
 def monkey_patch_IDAPython_ExecScript():

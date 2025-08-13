@@ -9,17 +9,29 @@
 
 import idaapi
 
-def is_using_pyqt5():
+def get_qt_version():
+    "Returns 4, 5 or 6, depending on the IDA version"
     if hasattr(idaapi, "get_kernel_version"):
-        _ida_version_major, _ida_version_minor = map(int, idaapi.get_kernel_version().split("."))
-        return _ida_version_major > 6 or (_ida_version_major == 6 and _ida_version_minor >= 9)
+        ida_version = tuple(map(int, idaapi.get_kernel_version().split(".")))
+        if ida_version >= (9, 2):
+            return 6
+        elif ida_version >= (6, 9):
+            return 5
+        else:
+            return 4
     else:
-        return False
+        return 4
 
-if is_using_pyqt5():
+_qt_version = get_qt_version()
+
+if _qt_version == 6:
+    from PySide6 import QtGui, QtWidgets, QtCore
+elif _qt_version == 5:
     from PyQt5 import QtGui, QtWidgets, QtCore
-else:
+elif _qt_version == 4:
     from PySide import QtGui, QtCore
+else:
+    raise Exception("IDA is running an unknown Qt version")
 
 import sys
 import os
@@ -28,7 +40,15 @@ import types
 # QtSvg binairies are not bundled with IDA. So we monkey patch PySide to avoid
 # IPython to load a module with missing binary files. This *must* happend before
 # importing RichJupyterWidget
-if is_using_pyqt5():
+if _qt_version == 6:
+    import PySide6
+    sys.modules["PySide6.QtSvg"] = types.ModuleType("EmptyQtSvg")
+    EmptyQtPrintSupport = types.ModuleType("EmptyQtPrintSupport")
+    EmptyQtPrintSupport.QPageSetupDialog = type("EmptyQPageSetupDialog", (object,), {})
+    EmptyQtPrintSupport.QPrintDialog = type("EmptyQPrintDialog", (object,), {})
+    sys.modules["PySide6.QtPrintSupport"] = EmptyQtPrintSupport
+    os.environ["QT_API"] = "pyside6"
+elif _qt_version == 5:
     try:
         # In the case of pyqt5, we have to avoid patch the binding detection
         # used in qtconsole <= 4.6.
@@ -155,7 +175,7 @@ class IPythonConsole(idaapi.PluginForm):
     
     def OnCreate(self, form):
         try:
-            if is_using_pyqt5():
+            if get_qt_version() >= 5:
                 self.parent = self.FormToPyQtWidget(form, ctx=sys.modules[__name__])
             else:
                 self.parent = self.FormToPySideWidget(form, ctx=sys.modules[__name__])
@@ -166,7 +186,7 @@ class IPythonConsole(idaapi.PluginForm):
             print(traceback.format_exc())
 
     def _createConsoleWidget(self):
-        if is_using_pyqt5():
+        if get_qt_version() >= 5:
             layout = QtWidgets.QVBoxLayout()
         else:
             layout = QtGui.QVBoxLayout()
