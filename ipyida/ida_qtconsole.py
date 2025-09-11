@@ -48,6 +48,11 @@ if _qt_version == 6:
     EmptyQtPrintSupport.QPrintDialog = type("EmptyQPrintDialog", (object,), {})
     sys.modules["PySide6.QtPrintSupport"] = EmptyQtPrintSupport
     os.environ["QT_API"] = "pyside6"
+    # If PyQt5 is already loaded by another plugin, qtpy will use it instead of
+    # PySide6, but PyQt5 modules are shims in IDA 9.2 that won't not work with
+    # qtconsole, so set FORCE_QT_API to make sure qtpy uses PySide6.
+    # See https://github.com/eset/ipyida/issues/77
+    os.environ["FORCE_QT_API"] = "1"
 elif _qt_version == 5:
     try:
         # In the case of pyqt5, we have to avoid patch the binding detection
