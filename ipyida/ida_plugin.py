@@ -8,7 +8,33 @@
 
 import idaapi
 from ipyida import ida_qtconsole, kernel
-from PyQt5.QtWidgets import QApplication
+
+
+def _get_QApplication_instance():
+    """
+    Return the current QApplication instance as returned by
+    QApplication.instance()
+
+    May return None if the plugin is loaded without GUI, in headless mode, or
+    via the idapro Python module
+    """
+
+    if hasattr(idaapi, "is_idaq") and not idaapi.is_idaq():
+        return None
+
+    _qt_version = ida_qtconsole.get_qt_version()
+
+    if _qt_version == 6:
+        from PySide6.QtWidgets import QApplication
+    elif _qt_version == 5:
+        from PyQt5.QtWidgets import QApplication
+    elif _qt_version == 4:
+        from PySide.QtWidgets import QApplication
+    else:
+        return None
+
+    return QApplication.instance()
+
 
 class IPyIDAPlugIn(idaapi.plugin_t):
     wanted_name = "IPyIDA"
@@ -49,11 +75,15 @@ def _setup_asyncio_event_loop():
     if isinstance(asyncio.get_event_loop(), qasync.QEventLoop):
         print("Note: qasync event loop already set up.")
     else:
-        qapp = QApplication.instance()
+        qapp = _get_QApplication_instance()
         loop = qasync.QEventLoop(qapp, already_running=True)
         asyncio.set_event_loop(loop)
 
-if QApplication.instance() and ida_qtconsole.get_qt_version() >= 5 and kernel.is_using_ipykernel_5():
+if (
+    _get_QApplication_instance() is not None
+    and ida_qtconsole.get_qt_version() >= 5
+    and kernel.is_using_ipykernel_5()
+):
     _setup_asyncio_event_loop()
 
 def monkey_patch_IDAPython_ExecScript():
