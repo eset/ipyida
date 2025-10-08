@@ -1,0 +1,36 @@
+{
+  "IDAMetadataDescriptorVersion": 1,
+  "plugin": {
+    "name": "ipyida",
+    "entryPoint": "ipyida_plugin_stub.py",
+    "version": "2.3",
+    "description": "Embed an IPython console inside IDA Pro with Qt integration and Jupyter support",
+    "license": "BSD-2-Clause",
+    "urls": {
+      "repository": "https://github.com/eset/ipyida"
+    },
+    "authors": [
+      {
+        "name": "Marc-Etienne M.Léveillé",
+        "email": "leveille@google.com"
+      }
+    ],
+    "pythonDependencies": [
+      "ipyida==2.3"
+    ],
+    "categories": [
+      "api-scripting-and-automation"
+    ],
+    "keywords": [
+      "ipython",
+      "jupyter",
+      "console",
+      "qtconsole",
+      "interactive",
+      "python",
+      "notebook",
+      "kernel",
+      "repl"
+    ]
+  }
+}
