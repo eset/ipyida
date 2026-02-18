@@ -72,12 +72,19 @@ def PLUGIN_ENTRY():
 def _setup_asyncio_event_loop():
     import qasync
     import asyncio
-    if isinstance(asyncio.get_event_loop(), qasync.QEventLoop):
-        print("Note: qasync event loop already set up.")
-    else:
+
+    def _link_qevent_loop():
         qapp = _get_QApplication_instance()
         loop = qasync.QEventLoop(qapp, already_running=True)
         asyncio.set_event_loop(loop)
+
+    try:
+        if isinstance(asyncio.get_event_loop(), qasync.QEventLoop):
+            print("Note: qasync event loop already set up.")
+        else:
+            _link_qevent_loop()
+    except RuntimeError:
+        _link_qevent_loop()
 
 if (
     _get_QApplication_instance() is not None
