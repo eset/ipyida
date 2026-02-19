@@ -73,18 +73,20 @@ def _setup_asyncio_event_loop():
     import qasync
     import asyncio
 
-    def _link_qevent_loop():
+    try:
+        should_set_loop = not isinstance(asyncio.get_event_loop(), qasync.QEventLoop)
+    except RuntimeError:
+        # asyncio.get_event_loop() raises a RuntimeError if no loop is running
+        # This happends for Python >= 3.14
+        should_set_loop = True
+
+    if should_set_loop:
         qapp = _get_QApplication_instance()
         loop = qasync.QEventLoop(qapp, already_running=True)
         asyncio.set_event_loop(loop)
+    else:
+        print("Note: qasync event loop already set up.")
 
-    try:
-        if isinstance(asyncio.get_event_loop(), qasync.QEventLoop):
-            print("Note: qasync event loop already set up.")
-        else:
-            _link_qevent_loop()
-    except RuntimeError:
-        _link_qevent_loop()
 
 if (
     _get_QApplication_instance() is not None
