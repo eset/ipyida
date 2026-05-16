@@ -47,6 +47,23 @@ def is_using_ipykernel_5():
     import ipykernel
     return hasattr(ipykernel.kernelbase.Kernel, "process_one")
 
+
+def _configure_debugpy_python():
+    # ipykernel's Debugger drives debugpy.listen(), which spawns its DAP
+    # adapter via sys.executable. In IDA that's idaq.exe, so the adapter
+    # never starts and listen() hits its 30 s accept() timeout -- this is
+    # what makes the JupyterLab/Notebook 7 debug button hang then error
+    # with "timed out waiting for adapter to connect". Point debugpy at
+    # the real interpreter backing this environment.
+    try:
+        import debugpy
+        from .notebook import _python_executable
+    except ImportError:
+        return
+    python = _python_executable()
+    if os.path.exists(python):
+        debugpy.configure(python=python)
+
 def get_ea_bounds():
     """
     Wraps getting the min and max ea to use either inf_get_min_ea
@@ -165,6 +182,8 @@ class IPythonKernel(object):
         app.kernel.start()
 
         self.connection_file = app.connection_file
+
+        _configure_debugpy_python()
 
         if not is_using_ipykernel_5():
             app.kernel.do_one_iteration()

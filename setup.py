@@ -39,6 +39,7 @@ setup(name='ipyida',
       extras_require={
           "notebook": [
               "notebook<7",
+              "jupyter-server<2",
               "jupyter-client<7",
               "jupyter-kernel-proxy",
           ],

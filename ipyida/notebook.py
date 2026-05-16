@@ -57,22 +57,28 @@ def _server_root_dir(server_info):
     """
     return server_info.get("root_dir") or server_info.get("notebook_dir") or ""
 
-def _popen_python_module(module, *args, **kwargs):
-    # We can't rely on sys.executable because it's set to ida{q,t}{.exe,} in IDA
+def _python_executable():
+    # sys.executable in IDA is ida{q,t}{.exe,}, not a Python interpreter.
+    # Locate the real Python that backs this environment instead.
     if sys.platform == 'win32':
-        # Try in Scripts first. If a virtualenv is activated, Python.exe will
-        # be there
+        # Virtualenvs put Python.exe in Scripts/; regular installs at sys.prefix.
         python = os.path.join(sys.prefix, 'Scripts', 'Python.exe')
         if not os.path.exists(python):
             python = os.path.join(sys.prefix, 'Python.exe')
-        si_hidden_window = subprocess.STARTUPINFO()
-        si_hidden_window.dwFlags = subprocess.STARTF_USESHOWWINDOW
-        si_hidden_window.wShowWindow = subprocess.SW_HIDE
-        kwargs["startupinfo"] = si_hidden_window
     else:
         python = os.path.join(sys.prefix, 'bin', 'python')
         if sys.version_info.major >= 3:
             python += str(sys.version_info.major)
+    return python
+
+
+def _popen_python_module(module, *args, **kwargs):
+    python = _python_executable()
+    if sys.platform == 'win32':
+        si_hidden_window = subprocess.STARTUPINFO()
+        si_hidden_window.dwFlags = subprocess.STARTF_USESHOWWINDOW
+        si_hidden_window.wShowWindow = subprocess.SW_HIDE
+        kwargs["startupinfo"] = si_hidden_window
     return subprocess.Popen([ python, "-m", module ] + list(args), **kwargs)
 
 
@@ -99,13 +105,47 @@ class NotebookManager(object):
 
     @staticmethod
     def ensure_kernelspec_installed():
-        if "proxy" not in find_kernel_specs():
+        specs = find_kernel_specs()
+        if "proxy" not in specs:
             print("-> Installing jupyter-kernel-proxy kernelspec...")
-            return _popen_python_module(
-                "jupyter_kernel_proxy", "install"
-            ).wait() == 0
-        else:
-            return True
+            if _popen_python_module("jupyter_kernel_proxy", "install").wait() != 0:
+                return False
+            specs = find_kernel_specs()
+            if "proxy" not in specs:
+                return False
+        # Two patches on the kernelspec, idempotent:
+        #   1. argv -> our proxy_runner wrapper, which suppresses the
+        #      fallback kernel_info_reply that lacks fields like
+        #      ``implementation: "ipython"``.
+        #   2. metadata.debugger = true. JupyterLab / Notebook 7 enable the
+        #      debug toolbar button purely from kernelspec metadata
+        #      (see jupyterlab/packages/debugger/src/service.ts:isAvailable),
+        #      not from kernel_info_reply. jupyter_kernel_proxy ships
+        #      without it, so the button stays greyed out.
+        spec_path = os.path.join(specs["proxy"], "kernel.json")
+        try:
+            with open(spec_path, "r") as f:
+                spec = json.load(f)
+            changed = False
+            current_argv = spec.get("argv") or []
+            desired_argv = (
+                [current_argv[0] if current_argv else sys.executable]
+                + ["-m", "ipyida.proxy_runner", "{connection_file}"]
+            )
+            if current_argv != desired_argv:
+                spec["argv"] = desired_argv
+                changed = True
+            metadata = spec.setdefault("metadata", {})
+            if not metadata.get("debugger"):
+                metadata["debugger"] = True
+                changed = True
+            if changed:
+                with open(spec_path, "w") as f:
+                    json.dump(spec, f)
+        except (OSError, ValueError) as e:
+            print("-> Could not patch proxy kernelspec: %s" % e)
+            return False
+        return True
 
     @staticmethod
     def ensure_notebook_installed():
@@ -199,8 +239,14 @@ class NotebookManager(object):
 
         if nb_server_info is None:
             print("-> Starting notebook")
+            # Use ``python -m notebook`` instead of ``python -m jupyter notebook``
+            # to bypass jupyter_core's dispatch to the ``jupyter-notebook`` script
+            # on PATH -- pip downgrades between notebook 7 and 6 can leave that
+            # script pointing at the wrong module (e.g. 7's ``notebook.app``
+            # after a downgrade to 6). ``notebook/__main__.py`` exists in both
+            # 6 and 7 and routes to the right entry point.
             self.nb_proc = _popen_python_module(
-                "jupyter", "notebook", "--no-browser", "-y",
+                "notebook", "--no-browser", "-y",
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 text=True
             )
