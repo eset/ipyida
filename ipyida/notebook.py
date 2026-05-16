@@ -15,11 +15,47 @@ import time
 import json
 import threading
 import webbrowser
+import urllib.request
+import urllib.error
 
 import idaapi
 import nbformat
 from jupyter_client.kernelspec import find_kernel_specs
 from jupyter_client import find_connection_file
+
+
+def _notebook_major_version():
+    try:
+        import notebook
+    except ImportError:
+        return None
+    try:
+        return int(notebook.__version__.split('.')[0])
+    except (AttributeError, ValueError):
+        return None
+
+
+def _list_running_servers():
+    """Return an iterator over running notebook/jupyter servers.
+
+    notebook 7 dropped ``notebook.notebookapp`` and runs on top of
+    ``jupyter_server``; notebook 6 still exposes its own server list.
+    """
+    major = _notebook_major_version()
+    if major is not None and major >= 7:
+        from jupyter_server.serverapp import list_running_servers
+    else:
+        from notebook.notebookapp import list_running_servers
+    return list_running_servers()
+
+
+def _server_root_dir(server_info):
+    """Return the root directory of a running server.
+
+    notebook 6 reports ``notebook_dir``; jupyter_server (notebook 7) reports
+    ``root_dir``.
+    """
+    return server_info.get("root_dir") or server_info.get("notebook_dir") or ""
 
 def _popen_python_module(module, *args, **kwargs):
     # We can't rely on sys.executable because it's set to ida{q,t}{.exe,} in IDA
@@ -78,16 +114,50 @@ class NotebookManager(object):
         except ImportError:
             print("-> Installing jupyter-notebook...")
             return _popen_python_module(
-                "pip", "install", "notebook<7"
+                "pip", "install", "notebook"
             ).wait() == 0
         else:
             return True
 
     def _get_running_notebook_config(self):
-        from notebook.notebookapp import list_running_servers
         idb_path = idaapi.get_path(idaapi.PATH_TYPE_IDB)
-        is_idb_under_nb_dir = lambda c: idb_path.startswith(c.get("notebook_dir"))
-        return next(filter(is_idb_under_nb_dir, list_running_servers()), None)
+        for server_info in _list_running_servers():
+            root = _server_root_dir(server_info)
+            if root and idb_path.startswith(root):
+                return server_info
+        return None
+
+    @staticmethod
+    def _create_proxy_session(server_info, relative_path):
+        """Pre-create a kernel session bound to the proxy kernel.
+
+        Needed on notebook 7 because its JupyterLab-based frontend does not
+        honour the legacy ``?kernel_name=`` query string the way notebook 6
+        did. Posting the session beforehand makes the page reuse the
+        already-attached proxy kernel when it opens. Harmless on notebook 6
+        (the existing session is reused instead of creating a duplicate).
+        """
+        base = server_info.get("url", "").rstrip("/")
+        token = server_info.get("token", "")
+        if not base:
+            return
+        body = json.dumps({
+            "path": "/".join(relative_path.split(os.path.sep)),
+            "type": "notebook",
+            "name": "",
+            "kernel": {"name": "proxy"},
+        }).encode("utf-8")
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["Authorization"] = "token " + token
+        req = urllib.request.Request(
+            base + "/api/sessions", data=body, headers=headers, method="POST",
+        )
+        try:
+            urllib.request.urlopen(req, timeout=10).read()
+        except (urllib.error.URLError, OSError) as e:
+            # Non-fatal: fall back to the URL-query selection path.
+            print("-> Could not pre-create proxy session: %s" % e)
 
     def _parse_args(self, line):
         args = line.split()
@@ -156,14 +226,18 @@ class NotebookManager(object):
             with open(ipynb_path, "w") as f:
                 nb = nbformat.versions[nbformat.current_nbformat].new_notebook()
                 json.dump(nb, f)
-        relative_path = os.path.relpath(ipynb_path, nb_server_info.get("notebook_dir"))
-        url = nb_server_info.get("url") + \
-            "notebooks/" + "/".join(relative_path.split(os.path.sep)) + \
-            '?kernel_name=proxy&token=' + nb_server_info.get("token")
+        relative_path = os.path.relpath(ipynb_path, _server_root_dir(nb_server_info))
         # Update access time of the file so it's picked up by the proxy.
         # jupyter-kernel-proxy will use the file with the most recent access
         # time (like `jupyter console --existing`)
         with open(find_connection_file(self.connection_file), "r"): pass
+        # On notebook 7 the JupyterLab-based frontend ignores the
+        # ?kernel_name= query argument. Posting a session in advance attaches
+        # the proxy kernel so the notebook page picks it up on load.
+        self._create_proxy_session(nb_server_info, relative_path)
+        url = nb_server_info.get("url") + \
+            "notebooks/" + "/".join(relative_path.split(os.path.sep)) + \
+            '?kernel_name=proxy&token=' + nb_server_info.get("token")
         webbrowser.open(url)
         return url
 

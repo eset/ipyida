@@ -71,6 +71,12 @@ notebook attached to IPyIDA. The command takes care of installing dependencies
 on its first run and starting a Notebook server unless one is already running.
 Check the command help (by typing `%open_notebook?`) for further options.
 
+Both `notebook` 6.x and 7.x are supported. On 7.x (which is served by
+`jupyter-server`) IPyIDA pre-creates a kernel session against the `proxy`
+kernel via the REST API so the JupyterLab-based frontend attaches to it on
+load — the legacy `?kernel_name=` query string alone is not honoured on the
+new UI.
+
 == Customizing the IPython console
 
 By default, the console does not have any globals available. If you want to
