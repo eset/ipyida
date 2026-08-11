@@ -81,7 +81,26 @@ from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from jupyter_client import find_connection_file
+import qtconsole.styles
 import ipyida.kernel
+
+def _get_qapplication_instance():
+    if get_qt_version() >= 5:
+        return QtWidgets.QApplication.instance()
+    else:
+        return QtGui.QApplication.instance()
+
+def _is_dark_theme():
+    "Guess whether IDA is currently using a dark theme from its Qt palette."
+    app = _get_qapplication_instance()
+    if app is None:
+        return False
+    window_color = app.palette().color(QtGui.QPalette.Window)
+    # Perceived luminance (ITU-R BT.601)
+    luminance = (0.299 * window_color.red() +
+                 0.587 * window_color.green() +
+                 0.114 * window_color.blue())
+    return luminance < 128
 
 class IdaRichJupyterWidget(RichJupyterWidget):
     def _is_complete(self, source, interactive):
@@ -210,6 +229,9 @@ class IPythonConsole(idaapi.PluginForm):
             # problem is present only on Linux.
             # See: https://github.com/eset/ipyida/issues/8
             widget_options["gui_completion"] = 'droplist'
+        if _is_dark_theme():
+            widget_options["style_sheet"] = qtconsole.styles.default_dark_style_sheet
+            widget_options["syntax_style"] = qtconsole.styles.default_dark_syntax_style
         widget_options.update(_user_widget_options)
         self.ipython_widget = IdaRichJupyterWidget(self.parent, **widget_options)
         self.ipython_widget.kernel_manager = self.kernel_manager

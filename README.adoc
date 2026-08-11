@@ -63,9 +63,12 @@ This is similar to the `idapythonrc.py` file.
 
 === Dark mode
 
-With a dark theme in IDA Pro, it's more convenient to also have a dark theme in
-the IPython console. To activate the dark theme built into `qtconsole`, add the
-following in your `ipyidarc.py`:
+IPyIDA automatically matches IDA's current theme: it inspects IDA's Qt
+palette when the console is created and switches to `qtconsole`'s built-in
+dark style if IDA is running a dark theme.
+
+If you want to force a specific style regardless of IDA's theme, you can
+still override it in your `ipyidarc.py`:
 
 [source, python]
 ----
