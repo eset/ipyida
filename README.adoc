@@ -15,54 +15,35 @@ image::ipyida-screenshot.png[IPyIDA screenshot,width=100%]
 IPyIDA should be compatible with IDA 6.6 and later on Windows, OS X and Linux.
 It has been tested on IDA up to 9.2.
 
-=== Fast and easy install
+=== Install with hcli
 
-A script is provided to install IPyIDA and its dependencies automagically from
-the IDA console. Simply copy the following line to the IDA console.
+IPyIDA ships an `ida-plugin.json` manifest and can be installed with
+https://hcli.docs.hex-rays.com/[hcli], Hex-Rays' command-line plugin manager.
 
-.Python 2
-[source,python]
+[source,bash]
 ----
-import urllib2; exec urllib2.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py').read()
-----
-
-.Python 3
-[source,python]
-----
-import urllib.request; exec(urllib.request.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py').read())
+hcli plugin install ipyida
 ----
 
-On macOS, `Python3.framework` does not provide a trusted CA file. You can use
-the system-wide file `/etc/ssl/cert.pem`.
+==== Installing from source (editable)
 
-[source,python]
+To hack on IPyIDA itself, clone the repository and install it in editable
+mode. hcli will symlink the repository into IDA's plugins directory and
+install its Python dependencies, so local edits take effect on the next
+plugin reload.
+
+[source,bash]
 ----
-import urllib.request; exec(urllib.request.urlopen('https://github.com/eset/ipyida/raw/stable/install_from_ida.py', cafile="/etc/ssl/cert.pem").read())
+git clone https://github.com/eset/ipyida.git
+hcli plugin install -e ipyida
 ----
-
-The script will do the following:
-
-1. Install `pip` if it's not already installed
-2. Install the `ipyida` package from https://pypi.org/project/ipyida/[PyPi]
-3. Copy `ipyida_plugin_stub.py` to the user's `plugins` directory
-4. Load the IPyIDA plugin
-
-You can inspect the link:install_from_ida.py[] script if you wish to see
-exactly what it does.
 
 ==== Upgrading
 
-Rerun the install script to update to the latest version and restart IDA.
-
-=== Install it the IDA way
-
-If you'd rather manage the dependencies and updates yourself, you can
-copy `ipyida_plugin_stub.py` and the `ipyida` directory inside IDA's
-`plugins` directory.
-
-This method requires that you manage dependencies on your own. IPyIDA requires
-the `ipykernel` and `qtconsole` package, and the `qasync` package if using
-`ipykernel` version 5 or newer.
+[source,bash]
+----
+hcli plugin upgrade ipyida
+----
 
 == Jupyter Notebook integration
 
@@ -82,9 +63,12 @@ This is similar to the `idapythonrc.py` file.
 
 === Dark mode
 
-With a dark theme in IDA Pro, it's more convenient to also have a dark theme in
-the IPython console. To activate the dark theme built into `qtconsole`, add the
-following in your `ipyidarc.py`:
+IPyIDA automatically matches IDA's current theme: it inspects IDA's Qt
+palette when the console is created and switches to `qtconsole`'s built-in
+dark style if IDA is running a dark theme.
+
+If you want to force a specific style regardless of IDA's theme, you can
+still override it in your `ipyidarc.py`:
 
 [source, python]
 ----

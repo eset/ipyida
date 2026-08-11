@@ -1,0 +1,42 @@
+{
+  "$schema": "https://hcli.docs.hex-rays.com/schemas/ida-plugin.json",
+  "IDAMetadataDescriptorVersion": 1,
+  "plugin": {
+    "name": "ipyida",
+    "version": "2.3",
+    "entryPoint": "ipyida_plugin.py",
+    "description": "IDA plugin to embed the IPython console inside IDA",
+    "license": "BSD-2-Clause",
+    "urls": {
+      "repository": "https://github.com/eset/ipyida"
+    },
+    "authors": [
+      {
+        "name": "Marc-Etienne M.Léveillé",
+        "email": "leveille@google.com"
+      }
+    ],
+    "pythonDependencies": [
+      "ipykernel>=4.6",
+      "ipykernel>=5.1.4; python_version >= \"3.8\" and platform_system==\"Windows\"",
+      "qtconsole>=4.3",
+      "qasync; python_version >= \"3\"",
+      "jupyter-client<6.1.13",
+      "nbformat"
+    ],
+    "categories": [
+      "api-scripting-and-automation"
+    ],
+    "keywords": [
+      "ipython",
+      "jupyter",
+      "console",
+      "qtconsole",
+      "interactive",
+      "python",
+      "notebook",
+      "kernel",
+      "repl"
+    ]
+  }
+}
