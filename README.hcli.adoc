@@ -1,7 +1,0 @@
-The `ida-plugin.json` file exists in the repository so it is picked up by the
-hcli repo finder which looks for this file via the GitHub search API. (see
-https://github.com/HexRaysSA/ida-hcli/blob/v0.19.2/src/hcli/lib/ida/plugin/repo/github.py#L724)
-
-The `ida-plugin.json` file is generated using `setup.py build_hcli` which
-builds it based on the Python package metadata, and add it to the relase zip
-file that must be manually uploaded as a GitHub release.
