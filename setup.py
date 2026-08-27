@@ -94,7 +94,7 @@ setup(name='ipyida',
       long_description_content_type="text/markdown",
       author='Marc-Etienne M.Léveillé',
       author_email='leveille@google.com',
-      url='https://www.github.com/eset/ipyida',
+      url='https://github.com/eset/ipyida',
       packages=['ipyida'],
       cmdclass={
         'build_hcli': HcliBuild
