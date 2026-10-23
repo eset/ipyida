@@ -77,7 +77,7 @@ def _setup_asyncio_event_loop():
         should_set_loop = not isinstance(asyncio.get_event_loop(), qasync.QEventLoop)
     except RuntimeError:
         # asyncio.get_event_loop() raises a RuntimeError if no loop is running
-        # This happends for Python >= 3.14
+        # This happens for Python >= 3.14
         should_set_loop = True
 
     if should_set_loop:
@@ -97,7 +97,7 @@ if (
 
 def monkey_patch_IDAPython_ExecScript():
     """
-    This funtion wraps IDAPython_ExecScript to avoid having an empty string has
+    This function wraps IDAPython_ExecScript to avoid having an empty string as
     a __file__ attribute of a module.
     See https://github.com/idapython/src/pull/23
     """
