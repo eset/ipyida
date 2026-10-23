@@ -19,7 +19,7 @@ if not "IPYIDA_PACKAGE_LOCATION" in dir():
     IPYIDA_PACKAGE_LOCATION = "ipyida"
 
 
-# Fix the sys.exectuable path. It's misleading in two cases:
+# Fix the sys.executable path. It's misleading in two cases:
 #  - On Windows, it's set to 'idaq.exe'.
 #  - If a virtualenv is activated with activate_this.py, sys.prefix is changed
 #    but sys.executable is still set to the original process. pip and packages
@@ -110,7 +110,7 @@ if pip_install(IPYIDA_PACKAGE_LOCATION) != 0:
         raise Exception("ipyida package installation failed")
     else:
         # If no packages were installed in user site-packages, the path may
-        # not be in sys.path in current Python process. Importing ipyida will
+        # not be in sys.path in the current Python process. Importing ipyida will
         # fail until Python (or IDA) is restarted. We can "refresh" sys.path
         # using site.main().
         import site
@@ -143,7 +143,7 @@ if not os.path.exists(os.path.dirname(ipyida_stub_target_path)):
     os.makedirs(os.path.dirname(ipyida_stub_target_path), 0o755)
 
 # Make sure ipyida module is not the ipyida.py in the plugins folder, otherwise
-# pkg_resources will try to get file from there. This happends when package is
+# pkg_resources will try to get file from there. This happens when package is
 # uninstalled, but ipyida.py is still in the plugin folder.
 if 'ipyida' in sys.modules:
     del sys.modules['ipyida']
